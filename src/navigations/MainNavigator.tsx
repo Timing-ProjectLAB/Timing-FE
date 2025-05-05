@@ -2,6 +2,7 @@ import React from 'react';
 import StartScreen from '../screens/StartScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterNavigatior from './RegisterNavigator';
+import ChatNavigator from './ChatNavigator';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationTypes } from './NavigationTypes';
 
@@ -22,6 +23,11 @@ function MainNavigator() {
       <Stack.Screen
         name="RegisterNavigator"
         component={RegisterNavigatior}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ChatNavigator"
+        component={ChatNavigator}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

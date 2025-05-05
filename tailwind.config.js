@@ -5,6 +5,7 @@ module.exports = {
       colors: {},
       fontFamily: {
         pre: ['Pretendard-Black'],
+        inter: ['InterVariable'],
       },
     },
   },
