@@ -12,6 +12,7 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		1963701316B24C178BC6F92C /* Pretendard-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = 6426BDCBA6A842C6B93A7978 /* Pretendard-Black.otf */; };
+		EA510AA226C14E59961BF15E /* InterVariable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 588EC61542CB4816BA2DE447 /* InterVariable.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +38,7 @@
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = timing/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		6426BDCBA6A842C6B93A7978 /* Pretendard-Black.otf */ = {isa = PBXFileReference; name = "Pretendard-Black.otf"; path = "../src/assets/fonts/Pretendard-Black.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		588EC61542CB4816BA2DE447 /* InterVariable.ttf */ = {isa = PBXFileReference; name = "InterVariable.ttf"; path = "../src/assets/fonts/InterVariable.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,6 +125,7 @@
 			isa = "PBXGroup";
 			children = (
 				6426BDCBA6A842C6B93A7978 /* Pretendard-Black.otf */,
+				588EC61542CB4816BA2DE447 /* InterVariable.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -198,6 +201,7 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				1963701316B24C178BC6F92C /* Pretendard-Black.otf in Resources */,
+				EA510AA226C14E59961BF15E /* InterVariable.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -50,6 +50,7 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>Pretendard-Black.otf</string>
+		<string>InterVariable.ttf</string>
 	</array>
 </dict>
 </plist>

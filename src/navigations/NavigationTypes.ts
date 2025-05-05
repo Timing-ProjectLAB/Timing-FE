@@ -5,6 +5,7 @@ export declare namespace NavigationTypes {
     StartScreen: undefined;
     LoginScreen: undefined;
     RegisterNavigator: undefined;
+    ChatNavigator: undefined;
   };
 
   export type StartScreenProps = StackScreenProps<
@@ -20,6 +21,11 @@ export declare namespace NavigationTypes {
   export type RegisterNavigatorProps = StackScreenProps<
     RootStackParamList,
     'RegisterNavigator'
+  >;
+
+  export type ChatNavigatorProps = StackScreenProps<
+    RootStackParamList,
+    'ChatNavigator'
   >;
 
   export type RegisterStackList = {
