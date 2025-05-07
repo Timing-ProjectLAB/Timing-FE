@@ -33,13 +33,13 @@ const locations = [
 export default function BirthLocationScreen(
   props: NavigationTypes.BirthLocationScreenProps,
 ) {
-  const [birth_date, setBirth] = useState('');
-  const [location, setLocation] = useState('');
+  const [birth_date, setBirthDate] = useState('');
+  const [region_id, setRegionId] = useState('');
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const { navigation } = props;
 
   const handleNext = () => {
-    if (birth_date === '' || location === '') return;
+    if (birth_date === '' || region_id === '') return;
     navigation.navigate('GenderEarnScreen');
   };
 
@@ -57,7 +57,7 @@ export default function BirthLocationScreen(
             <View className="flex-row w-full h-[48px] bg-gray-200 rounded-xl my-2 mb-8 border-[#007AFF] border-2 px-4 font-inter text-base">
               <TextInput
                 value={birth_date}
-                onChangeText={setBirth}
+                onChangeText={setBirthDate}
                 placeholder="2001.06.11"
                 placeholderTextColor="#999"
                 className=""
@@ -69,7 +69,7 @@ export default function BirthLocationScreen(
               className="flex w-full h-[48px] bg-gray-200 rounded-xl my-2 border-[#007AFF] border-2 px-4 justify-center"
             >
               <Text className="font-inter text-base text-black">
-                {location}
+                {region_id}
               </Text>
               <View className="absolute right-4">
                 <DropDown width={12} height={12} />
@@ -84,7 +84,7 @@ export default function BirthLocationScreen(
                   renderItem={({ item }) => (
                     <TouchableOpacity
                       onPress={() => {
-                        setLocation(item);
+                        setRegionId(item);
                         setDropdownVisible(false);
                       }}
                       className="py-2 px-4"

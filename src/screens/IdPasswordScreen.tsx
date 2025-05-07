@@ -6,11 +6,11 @@ import { NavigationTypes } from '../navigations/NavigationTypes';
 export default function IdPasswordScreen(
   props: NavigationTypes.IdPasswordScreenProps,
 ) {
-  const [user_id, setUsername] = useState('');
+  const [user_id, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const { navigation } = props;
   const handleNext = () => {
-    if (username === '' || password === '') {
+    if (user_id === '' || password === '') {
       return;
     } else {
       navigation.navigate('BirthLocationScreen');
@@ -29,8 +29,8 @@ export default function IdPasswordScreen(
             <View>
               <Text className="font-inter font-bold text-2xl">아이디</Text>
               <TextInput
-                value={username}
-                onChangeText={setUsername}
+                value={user_id}
+                onChangeText={setUserId}
                 className="flex w-full h-[48px] bg-gray-200 rounded-xl my-2 mb-8 border-[#007AFF] border-2 px-4 font-inter text-base"
                 placeholderTextColor="#999"
               />
