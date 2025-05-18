@@ -1,3 +1,5 @@
+// src/navigations/NavigationTypes.ts
+
 import { StackScreenProps } from '@react-navigation/stack';
 
 export declare namespace NavigationTypes {
@@ -62,12 +64,23 @@ export declare namespace NavigationTypes {
     'RegisterLoadingScreen'
   >;
 
+  // ← 여기부터 수정
   export type ChatStackList = {
     ChatScreen: undefined;
-    InformScreen: undefined;
+    InformScreen: {
+      policy: {
+        title: string;
+        content?: string;
+        target: string;
+        amount: string;
+        date: string;
+        link?: string;
+      };
+    };
   };
 
   export type ChatScreenProps = StackScreenProps<ChatStackList, 'ChatScreen'>;
+
   export type InformationScreenProps = StackScreenProps<
     ChatStackList,
     'InformScreen'
