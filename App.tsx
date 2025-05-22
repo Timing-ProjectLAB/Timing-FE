@@ -1,18 +1,14 @@
 import React from 'react';
+import { Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import LoginScreen from './screens/LoginScreen';
-import SignupScreen from './screens/SignupScreen';
+import MainNavigator from './src/navigations/MainNavigator';
 
-const Stack = createNativeStackNavigator();
-
-export default function App() {
+function App(): React.JSX.Element {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="Login" component={LoginScreen} options={{ title: '로그인' }} />
-        <Stack.Screen name="Signup" component={SignupScreen} options={{ title: '회원가입' }} />
-      </Stack.Navigator>
+      <MainNavigator />
     </NavigationContainer>
   );
 }
+
+export default App;
