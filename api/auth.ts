@@ -1,15 +1,12 @@
-// src/api/auth.ts
+// api/auth.ts
 import api from './api';
 
-export const login = (userId: string, password: string) => {
-  return api.post('/auth/login', {
-    userId,
-    password,
-  });
+export const login = (user_id: string, password: string) => {
+  return api.post('/auth/login', { user_id, password });
 };
 
 export const signup = (payload: {
-  userId: string;
+  user_id: string;
   password: string;
   birth_date: string;
   region_id: number;
