@@ -34,8 +34,6 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
 
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const categories = ['주거', '복지', '창업', '취업', '교육'];
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -89,12 +87,6 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
     setInput('');
   };
 
-  const toggleCategory = (cat: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat],
-    );
-  };
-
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-[#8DD5FF]"
@@ -122,32 +114,6 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
           <>
             <ChatBubble message={initialMessages[0]} navigation={navigation} />
             <ChatBubble message={initialMessages[1]} navigation={navigation} />
-
-            {/* 카테고리: flex-1 으로 균등 분할 */}
-            <View className="flex-row w-full px-4 mb-4">
-              {categories.map(cat => {
-                const sel = selectedCategories.includes(cat);
-                return (
-                  <TouchableOpacity
-                    key={cat}
-                    onPress={() => toggleCategory(cat)}
-                    className={`flex-1 mx-1 py-2 rounded-full border ${
-                      sel
-                        ? 'bg-[#007AFF] border-transparent'
-                        : 'bg-white border-gray-300'
-                    }`}
-                  >
-                    <Text
-                      className={`text-center font-medium ${
-                        sel ? 'text-white' : 'text-black'
-                      }`}
-                    >
-                      {cat}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
           </>
         )}
         renderItem={({ item }) => (
