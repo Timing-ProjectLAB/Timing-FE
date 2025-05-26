@@ -1,32 +1,32 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, TextInput, Alert } from 'react-native';
+import { View, Text, Pressable, TextInput } from 'react-native';
 import { NavigationTypes } from '../navigations/NavigationTypes';
-import { login } from '../../api/auth';
+import { login } from '../../api/auth'; // 상단에 추가
+import { useUser } from '../contexts/UserContext';
+
 
 export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
   const [saveId, setSaveId] = useState(false);
   const [autoLogin, setAutoLogin] = useState(false);
-  const [username, setUsername] = useState('');
+  const [user_id, setUser_id] = useState('');
   const [password, setPassword] = useState('');
+  const { setUserId } = useUser();
   const { navigation } = props;
-
   const handleLogin = async () => {
-    if (username.trim() === '' || password.trim() === '') {
-      Alert.alert('입력 오류', '아이디와 비밀번호를 모두 입력해주세요.');
-      return;
-    }
+    if (user_id.trim() === '' || password.trim() === '') return;
 
     try {
-      console.log('📤 로그인 요청:', { user_id: username, password });
-      const res = await login(username, password);
-      console.log('✅ 로그인 성공:', res.data);
+      console.log('📤 로그인 요청', { user_id, password });
+      const res = await login(user_id, password);
+      console.log('✅ 로그인 성공', res.data);
+
+      setUserId(res.data.user_id);
       navigation.navigate('ChatNavigator');
     } catch (err: any) {
-      console.log('❌ 로그인 실패:', err.message);
-      Alert.alert('로그인 실패', err.message || '로그인에 실패했습니다.');
+      console.log('❌ [응답 에러]', err.response?.headers);
+      console.error('❌ 로그인 실패', err.response?.data || err.message);
     }
   };
-
   return (
     <View className="flex w-screen h-screen bg-white justify-center items-center">
       <View className="flex w-full h-1/2 items-center justify-center">
@@ -34,8 +34,8 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
           <View className="flex w-full h-2/3 items-center">
             <Text className="font-inter font-bold text-2xl">아이디</Text>
             <TextInput
-              value={username}
-              onChangeText={setUsername}
+              value={user_id}
+              onChangeText={setUser_id}
               placeholder="아이디를 입력하세요"
               className="flex w-4/5 h-[48px] bg-gray-200 rounded-xl my-2 mb-3 border-[#007AFF] border-2 px-4 font-inter text-base"
               placeholderTextColor="#999"
@@ -62,7 +62,9 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
                     <View className="w-5 h-5 bg-blue-500 rounded-sm" />
                   )}
                 </View>
-                <Text className="font-inter font-semibold text-lg">아이디 저장</Text>
+                <Text className="font-inter font-semibold text-lg">
+                  아이디 저장
+                </Text>
               </Pressable>
 
               <Pressable
@@ -74,27 +76,39 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
                     <View className="w-5 h-5 bg-blue-500 rounded-sm" />
                   )}
                 </View>
-                <Text className="font-inter font-semibold text-lg">자동로그인</Text>
+                <Text className="font-inter font-semibold text-lg">
+                  자동로그인
+                </Text>
               </Pressable>
             </View>
 
             <View className="flex w-full h-2/3 items-center justify-center my-2">
               <Pressable
                 className="flex w-5/6 h-[50px] bg-[#007AFF] rounded-xl items-center justify-center"
-                onPress={handleLogin}
+                onPress={() => handleLogin()}
               >
-                <Text className="font-inter font-bold text-white text-2xl">로그인</Text>
+                <Text className="font-inter font-bold text-white text-2xl">
+                  로그인
+                </Text>
               </Pressable>
             </View>
           </View>
         </View>
 
         <View className="flex w-full h-auto items-center">
-          <Pressable onPress={() => navigation.navigate('RegisterNavigator')}>
-            <Text className="font-inter text-lg text-[#007AFF] my-1">회원가입</Text>
+          <Pressable
+            onPress={() => {
+              navigation.navigate('RegisterNavigator');
+            }}
+          >
+            <Text className="font-inter text-lg text-[#007AFF] my-1">
+              회원가입
+            </Text>
           </Pressable>
           <Pressable>
-            <Text className="font-inter text-lg text-[#007AFF]">비밀번호를 잊어버렸나요?</Text>
+            <Text className="font-inter text-lg text-[#007AFF]">
+              비밀번호를 잊어버렸나요?
+            </Text>
           </Pressable>
         </View>
       </View>

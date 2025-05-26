@@ -1,13 +1,16 @@
+// App.tsx
 import React from 'react';
-import { Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import MainNavigator from './src/navigations/MainNavigator';
+import { UserProvider } from './src/contexts/UserContext';
 
 function App(): React.JSX.Element {
   return (
-    <NavigationContainer>
-      <MainNavigator />
-    </NavigationContainer>
+    <UserProvider>
+      <NavigationContainer>
+        <MainNavigator />
+      </NavigationContainer>
+    </UserProvider>
   );
 }
 
