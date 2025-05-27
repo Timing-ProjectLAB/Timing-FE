@@ -1,5 +1,3 @@
-// screens/ChatScreen.tsx
-
 import React, { useState } from 'react';
 import {
   View,
@@ -14,11 +12,13 @@ import Menu from '../assets/images/Menu.svg';
 import Profile from '../assets/images/Profile.svg';
 import ChatBubble, { Message } from '../components/ChatBubble';
 import { NavigationTypes } from '../navigations/NavigationTypes';
+import { useUser } from '../contexts/UserContext';
+import { sendQuestion } from '../../api/chat';
 
 export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
   const { navigation } = props;
+  const { userId } = useUser(); // ✅ userId 가져오기
 
-  // 초기 2개의 메시지
   const initialMessages: Message[] = [
     {
       id: '1',
@@ -37,57 +37,38 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const categories = ['주거', '복지', '창업', '취업', '교육'];
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+ const handleSend = async () => {
+   if (!input.trim()) return;
 
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      text: input.trim(),
-    };
+   const userMsg: Message = {
+     id: Date.now().toString(),
+     type: 'user',
+     text: input.trim(),
+   };
+   setMessages(prev => [...prev, userMsg]);
 
-    // API 처리 전 더미데이터, 실제 API 호출 시 이 부분을 대체 (2개의 더미 메시지)
-    const botResponses: Message[] = [
-      {
-        id: (Date.now() + 1).toString(),
-        type: 'bot',
-        title: '제주도에서 제공하는 2024년 구직자 취업 역량강화 지원사업',
-        target: '제한없음',
-        amount: '2년간 월 50~70만원 기업에게 지급',
-        date: '~ 2024. 12. 31일',
-        link: 'https://www.bokjiro.go.kr/xxxx',
-        policy: {
-          title: '제주도에서 제공하는 2024년 구직자 취업 역량강화 지원사업',
-          content: '미취업 청년을 정규직으로 신규채용하는 도내 중소기업 지원…',
-          target: '제한없음',
-          amount: '2년간 월 50~70만원 기업에게 지급',
-          date: '~ 2024. 12. 31일',
-          link: 'https://www.bokjiro.go.kr/xxxx',
-        },
-      },
-      {
-        id: (Date.now() + 2).toString(),
-        type: 'bot',
-        title: '제주도에서 제공하는 2024년 청년 취업지원 희망 프로젝트',
-        target: '만 18세 ~ 34세, 무직자',
-        amount: '월 최대 30만원, 2년간 지원',
-        date: '2024-01-01 ~ 2024-01-20',
-        link: 'https://www.bokjiro.go.kr/yyyy',
-        policy: {
-          title: '제주도에서 제공하는 2024년 청년 취업지원 희망 프로젝트',
-          content:
-            '미취업 청년 보금자리 지원사업: 15세~39세 청년근로자에게 숙소비 지원…',
-          target: '만 18세 ~ 34세, 무직자',
-          amount: '월 최대 30만원, 2년간 지원',
-          date: '2024-01-01 ~ 2024-01-20',
-          link: 'https://www.bokjiro.go.kr/yyyy',
-        },
-      },
-    ];
+   try {
+     console.log('📩 사용자 질문:', input.trim());
 
-    setMessages(prev => [...prev, userMsg, ...botResponses]);
-    setInput('');
-  };
+     const res = await sendQuestion({
+                   user_id: userId,
+                   question: input.trim(),
+                 });
+     console.log('✅ 응답:', res.data);
+
+     const botRes: Message = {
+       id: `${Date.now()}-bot`,
+       type: 'bot',
+       text: res.data.answer,
+     };
+
+     setMessages(prev => [...prev, botRes]);
+   } catch (e: any) {
+     console.error('❌ 질문 전송 오류:', error.message);
+   }
+
+   setInput('');
+ };
 
   const toggleCategory = (cat: string) => {
     setSelectedCategories(prev =>
@@ -122,8 +103,6 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
           <>
             <ChatBubble message={initialMessages[0]} navigation={navigation} />
             <ChatBubble message={initialMessages[1]} navigation={navigation} />
-
-            {/* 카테고리: flex-1 으로 균등 분할 */}
             <View className="flex-row w-full px-4 mb-4">
               {categories.map(cat => {
                 const sel = selectedCategories.includes(cat);

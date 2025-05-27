@@ -3,6 +3,8 @@ import { View, Text, Pressable, TextInput } from 'react-native';
 import { NavigationTypes } from '../navigations/NavigationTypes';
 import { login } from '../../api/auth'; // 상단에 추가
 import { useUser } from '../contexts/UserContext';
+import CookieManager from '@react-native-cookies/cookies';
+
 
 
 export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
@@ -18,9 +20,10 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
     try {
       console.log('📤 로그인 요청', { user_id, password });
       const res = await login(user_id, password);
-      console.log('✅ 로그인 성공', res.data);
 
       setUserId(res.data.user_id);
+      console.log('✅ userId 저장됨:', res.data.user_id);
+      console.log('✅ 로그인 전체 응답:', res.data);
       navigation.navigate('ChatNavigator');
     } catch (err: any) {
       console.log('❌ [응답 에러]', err.response?.headers);
