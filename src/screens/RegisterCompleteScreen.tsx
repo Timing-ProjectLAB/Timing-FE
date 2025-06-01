@@ -1,15 +1,44 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable } from 'react-native';
+// src/screens/RegisterCompleteScreen.tsx
+import React from 'react';
+import { View, Text, Pressable } from 'react-native';
 import Next from '../assets/images/Next.svg';
 import { NavigationTypes } from '../navigations/NavigationTypes';
+import { signup } from '../../api/auth'; // 백엔드 회원가입 API
+import { useUser } from '../contexts/UserContext';
+
 
 export default function RegisterCompleteScreen(
   props: NavigationTypes.RegisterCompleteScreenProps,
 ) {
   const { navigation } = props;
-  const handleNext = () => {
-    navigation.navigate('ChatNavigator');
-  };
+  const { userInfo } = useUser();
+
+ const handleNext = async () => {
+   try {
+     console.log('📤 회원가입 요청:', userInfo);
+
+     const payload = {
+       user_id: userInfo.userId,
+       password: userInfo.password!,
+       birth_date: userInfo.birth_date!, // YYYY-MM-DD
+       region_id: userInfo.regionId!,
+       gender: userInfo.gender!,
+       income_bracket: userInfo.incomeLevel!,
+       occupation: userInfo.occupation!,
+     };
+
+     const res = await signup(payload);
+     console.log('✅ 회원가입 성공:', res.data);
+
+     navigation.reset({
+       index: 0,
+       routes: [{ name: 'LoginScreen' }],
+     });
+   } catch (err: any) {
+     console.error('❌ 회원가입 실패:', err.response?.data || err.message);
+   }
+ };
+
   return (
     <View className="flex w-screen h-screen bg-white">
       <View className="flex w-full h-1/6 items-center justify-end">
@@ -34,7 +63,7 @@ export default function RegisterCompleteScreen(
         <View className="flex w-full h-1/3 items-center justify-center">
           <Pressable
             className="flex-row w-5/6 h-[48px] bg-[#007AFF] rounded-xl items-center justify-center relative"
-            onPress={() => handleNext()}
+            onPress={handleNext}
           >
             <Text className="font-inter font-bold text-xl text-white">
               다음

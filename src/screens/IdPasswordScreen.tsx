@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable } from 'react-native';
 import Next from '../assets/images/Next.svg';
 import { NavigationTypes } from '../navigations/NavigationTypes';
+import { useUser } from '../contexts/UserContext';
 
 export default function IdPasswordScreen(
   props: NavigationTypes.IdPasswordScreenProps,
@@ -9,13 +10,23 @@ export default function IdPasswordScreen(
   const [user_id, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const { navigation } = props;
+
+  const { setUserInfo } = useUser(); // ✅ Context에서 불러오기
+
   const handleNext = () => {
     if (user_id === '' || password === '') {
       return;
-    } else {
-      navigation.navigate('BirthLocationScreen');
     }
+
+    // ✅ Context에 저장
+    setUserInfo({
+      userId: user_id,
+      password: password,
+    });
+
+    navigation.navigate('BirthLocationScreen');
   };
+
   return (
     <View className="flex w-screen h-screen bg-white">
       <View className="flex w-full h-1/6 items-center justify-end">

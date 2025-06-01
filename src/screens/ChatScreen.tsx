@@ -14,6 +14,9 @@ import Menu from '../assets/images/Menu.svg';
 import Profile from '../assets/images/Profile.svg';
 import ChatBubble, { Message } from '../components/ChatBubble';
 import { NavigationTypes } from '../navigations/NavigationTypes';
+import { sendQuestion } from '../../api/chat'; // ✅ API 요청 함수
+import { useUser } from '../contexts/UserContext'; // ✅ 로그인된 user_id 가져오기
+
 
 export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
   const { navigation } = props;
@@ -37,58 +40,45 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const categories = ['주거', '복지', '창업', '취업', '교육'];
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+const { userId } = useUser(); // 로그인된 user_id
 
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      text: input.trim(),
-    };
+const handleSend = async () => {
+  if (!input.trim()) return;
 
-    // API 처리 전 더미데이터, 실제 API 호출 시 이 부분을 대체 (2개의 더미 메시지)
-    const botResponses: Message[] = [
-      {
-        id: (Date.now() + 1).toString(),
-        type: 'bot',
-        title: '제주도에서 제공하는 2024년 구직자 취업 역량강화 지원사업',
-        target: '제한없음',
-        amount: '2년간 월 50~70만원 기업에게 지급',
-        date: '~ 2024. 12. 31일',
-        link: 'https://www.bokjiro.go.kr/xxxx',
-        policy: {
-          title: '제주도에서 제공하는 2024년 구직자 취업 역량강화 지원사업',
-          content: '미취업 청년을 정규직으로 신규채용하는 도내 중소기업 지원…',
-          target: '제한없음',
-          amount: '2년간 월 50~70만원 기업에게 지급',
-          date: '~ 2024. 12. 31일',
-          link: 'https://www.bokjiro.go.kr/xxxx',
-        },
-      },
-      {
-        id: (Date.now() + 2).toString(),
-        type: 'bot',
-        title: '제주도에서 제공하는 2024년 청년 취업지원 희망 프로젝트',
-        target: '만 18세 ~ 34세, 무직자',
-        amount: '월 최대 30만원, 2년간 지원',
-        date: '2024-01-01 ~ 2024-01-20',
-        link: 'https://www.bokjiro.go.kr/yyyy',
-        policy: {
-          title: '제주도에서 제공하는 2024년 청년 취업지원 희망 프로젝트',
-          content:
-            '미취업 청년 보금자리 지원사업: 15세~39세 청년근로자에게 숙소비 지원…',
-          target: '만 18세 ~ 34세, 무직자',
-          amount: '월 최대 30만원, 2년간 지원',
-          date: '2024-01-01 ~ 2024-01-20',
-          link: 'https://www.bokjiro.go.kr/yyyy',
-        },
-      },
-    ];
-
-    setMessages(prev => [...prev, userMsg, ...botResponses]);
-    setInput('');
+  const userMsg: Message = {
+    id: Date.now().toString(),
+    type: 'user',
+    text: input.trim(),
   };
 
+  setMessages(prev => [...prev, userMsg]); // 사용자 메시지 먼저 보여주기
+  setInput(''); // 입력 초기화
+
+  try {
+    console.log('📩 사용자 질문:', input.trim());
+    const res = await sendQuestion({
+      user_id: userId, // ✅ Context에서 불러온 유저 ID
+      question: input.trim(),
+    });
+    console.log('✅ 응답:', res.data);
+
+    const botMsg: Message = {
+      id: Date.now().toString(),
+      type: 'bot',
+      text: res.data.answer || '죄송해요, 답변을 불러오지 못했어요.',
+    };
+
+    setMessages(prev => [...prev, botMsg]); // 응답 메시지 추가
+  } catch (error: any) {
+    console.error('❌ 질문 전송 오류:', error);
+    const errorMsg: Message = {
+      id: Date.now().toString(),
+      type: 'bot',
+      text: '서버 오류로 답변을 불러오지 못했어요.',
+    };
+    setMessages(prev => [...prev, errorMsg]);
+  }
+};
   const toggleCategory = (cat: string) => {
     setSelectedCategories(prev =>
       prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat],
