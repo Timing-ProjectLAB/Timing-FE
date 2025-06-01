@@ -10,6 +10,8 @@ import {
 import Next from '../assets/images/Next.svg';
 import { NavigationTypes } from '../navigations/NavigationTypes';
 import DropDown from '../assets/images/Dropdown.svg';
+import { useUser } from '../contexts/UserContext'; // ✅ 추가
+
 
 const locations = [
   '서울',
@@ -38,10 +40,16 @@ export default function BirthLocationScreen(
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const { navigation } = props;
 
+  const { setUserInfo } = useUser(); // ✅ Context에서 불러오기
+
   const handleNext = () => {
     if (birth_date === '' || region_id === '') return;
+
+   setUserInfo({ birth_date: '1999-01-01', regionId: 1 });
+
     navigation.navigate('GenderEarnScreen');
   };
+
 
   return (
     <View className="flex w-screen h-screen bg-white">

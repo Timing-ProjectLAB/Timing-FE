@@ -11,6 +11,9 @@ import Next from '../assets/images/Next.svg';
 import { NavigationTypes } from '../navigations/NavigationTypes';
 import DropDown from '../assets/images/Dropdown.svg';
 import Check from '../assets/images/Check.svg';
+import { useUser } from '../contexts/UserContext'; // ✅ 추가
+
+
 
 const earnings = [
   '1분위',
@@ -31,14 +34,19 @@ export default function GenderEarnScreen(
   const [income_bracket, setIncomeBracket] = useState('');
   const [occupation, setOccupation] = useState('');
   const [isDropdownVisible, setDropdownVisible] = useState(false);
-  const { navigation } = props;
   const [gender, setGender] = useState<'남성' | '여성' | null>(null);
+  const { navigation } = props;
+
+  const { setUserInfo } = useUser(); // ✅ Context 사용
+
   const handleNext = () => {
     if (income_bracket === '' || occupation === '' || gender === null) return;
-    else {
-      navigation.navigate('RegisterCompleteScreen');
-    }
+
+   setUserInfo({ gender: 1, incomeLevel: 3, occupation: '학생' });
+
+    navigation.navigate('RegisterCompleteScreen');
   };
+
   return (
     <View className="flex w-screen h-screen bg-white">
       <View className="flex w-full h-1/6 items-center justify-end">

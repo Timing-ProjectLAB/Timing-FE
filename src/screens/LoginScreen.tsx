@@ -1,20 +1,34 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, TextInput } from 'react-native';
 import { NavigationTypes } from '../navigations/NavigationTypes';
+import { login } from '../../api/auth'; // 상단에 추가
+import { useUser } from '../contexts/UserContext';
+
 
 export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
   const [saveId, setSaveId] = useState(false);
   const [autoLogin, setAutoLogin] = useState(false);
-  const [username, setUsername] = useState('');
+  const [user_id, setUser_id] = useState('');
   const [password, setPassword] = useState('');
-  const { navigation } = props;
-  const handleLogin = () => {
-    // 후에는 실제 로그인 API로 변경
-    if (username === '' || password === '') {
-      return;
-    } else {
-      console.log(navigation.getState());
-      navigation.navigate('ChatNavigator');
+  const { setUserInfo } = useUser();
+  const { navigation } = props; // 이 줄을 추가해야 돼
+  const handleLogin = async () => {
+    if (user_id.trim() === '' || password.trim() === '') return;
+
+    try {
+      console.log('📤 로그인 요청', { user_id, password });
+      const res = await login(user_id, password);
+      console.log('✅ 로그인 성공', res.data);
+
+      console.log('📌 navigation 확인:', navigation); // 이거 추가
+
+      setUserInfo({ userId: res.data.user_id });
+      navigation.navigate('ChatNavigator'); // 여기서 에러 났을 가능성
+    } catch (err: any) {
+      console.error('❌ 로그인 실패');
+      console.error('상태코드:', err.response?.status);
+      console.error('응답 데이터:', err.response?.data);
+      console.error('전체 에러:', err.message);
     }
   };
   return (
@@ -24,8 +38,8 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
           <View className="flex w-full h-2/3 items-center">
             <Text className="font-inter font-bold text-2xl">아이디</Text>
             <TextInput
-              value={username}
-              onChangeText={setUsername}
+              value={user_id}
+              onChangeText={setUser_id}
               placeholder="아이디를 입력하세요"
               className="flex w-4/5 h-[48px] bg-gray-200 rounded-xl my-2 mb-3 border-[#007AFF] border-2 px-4 font-inter text-base"
               placeholderTextColor="#999"
