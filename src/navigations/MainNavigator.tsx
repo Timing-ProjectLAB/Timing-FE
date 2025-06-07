@@ -3,6 +3,8 @@ import StartScreen from '../screens/StartScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterNavigatior from './RegisterNavigator';
 import ChatNavigator from './ChatNavigator';
+import HomeNavigator from './HomeNavigator';
+import BoardNavigator from './BoardNavigator';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationTypes } from './NavigationTypes';
 
@@ -28,6 +30,16 @@ function MainNavigator() {
       <Stack.Screen
         name="ChatNavigator"
         component={ChatNavigator}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="HomeNavigator"
+        component={HomeNavigator}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="BoardNavigator"
+        component={BoardNavigator}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

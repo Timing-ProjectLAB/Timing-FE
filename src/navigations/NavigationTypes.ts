@@ -38,7 +38,6 @@ export declare namespace NavigationTypes {
     GenderEarnScreen: undefined;
     RegisterCompleteScreen: undefined;
     RegisterLoadingScreen: undefined;
-    HomeNavigator: undefined;
   };
 
   export type IdPasswordScreenProps = StackScreenProps<
