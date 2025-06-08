@@ -4,7 +4,7 @@ import BirthLocationScreen from '../screens/BirthLocationScreen';
 import GenderEarnScreen from '../screens/GenderEarnScreen';
 import RegisterCompleteScreen from '../screens/RegisterCompleteScreen';
 import RegisterLoadingScreen from '../screens/RegisterLoadingScreen';
-import ChatNavigator from './ChatNavigator';
+import HomeNavigator from './HomeNavigator';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationTypes } from './NavigationTypes';
 
@@ -35,11 +35,6 @@ function RegisterNavigatior() {
       <Stack.Screen
         name="RegisterLoadingScreen"
         component={RegisterLoadingScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ChatNavigator"
-        component={ChatNavigator}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

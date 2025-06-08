@@ -8,6 +8,8 @@ export declare namespace NavigationTypes {
     LoginScreen: undefined;
     RegisterNavigator: undefined;
     ChatNavigator: undefined;
+    BoardNavigator: undefined;
+    HomeNavigator: undefined;
   };
 
   export type StartScreenProps = StackScreenProps<
@@ -36,7 +38,6 @@ export declare namespace NavigationTypes {
     GenderEarnScreen: undefined;
     RegisterCompleteScreen: undefined;
     RegisterLoadingScreen: undefined;
-    ChatNavigator: undefined;
   };
 
   export type IdPasswordScreenProps = StackScreenProps<
@@ -85,4 +86,31 @@ export declare namespace NavigationTypes {
     ChatStackList,
     'InformScreen'
   >;
+
+  export type BoardStackList = {
+    BoardScreen: undefined;
+    InformScreen: {
+      policy: {
+        title: string;
+        content?: string;
+        target: string;
+        amount: string;
+        date: string;
+        link?: string;
+      };
+    };
+  };
+
+  export type BoardScreenProps = StackScreenProps<
+    BoardStackList,
+    'BoardScreen'
+  >;
+
+  export type HomeStackList = {
+    HomeScreen: undefined;
+    ChatNavigator: undefined;
+    BoardNavigator: undefined;
+  };
+
+  export type HomeScreenProps = StackScreenProps<HomeStackList, 'HomeScreen'>;
 }
