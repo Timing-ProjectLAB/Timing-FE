@@ -4,7 +4,6 @@ import { NavigationTypes } from '../navigations/NavigationTypes';
 import { login } from '../../api/auth'; // 상단에 추가
 import { useUser } from '../contexts/UserContext';
 
-
 export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
   const [saveId, setSaveId] = useState(false);
   const [autoLogin, setAutoLogin] = useState(false);
@@ -23,7 +22,7 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
       console.log('📌 navigation 확인:', navigation); // 이거 추가
 
       setUserInfo({ userId: res.data.user_id });
-      navigation.navigate('ChatNavigator'); // 여기서 에러 났을 가능성
+      navigation.navigate('HomeNavigator'); // 여기서 에러 났을 가능성
     } catch (err: any) {
       console.error('❌ 로그인 실패');
       console.error('상태코드:', err.response?.status);

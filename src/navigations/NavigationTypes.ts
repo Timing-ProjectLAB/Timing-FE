@@ -69,14 +69,7 @@ export declare namespace NavigationTypes {
   export type ChatStackList = {
     ChatScreen: undefined;
     InformScreen: {
-      policy: {
-        title: string;
-        content?: string;
-        target: string;
-        amount: string;
-        date: string;
-        link?: string;
-      };
+      policy_id: string;
     };
   };
 
@@ -107,6 +100,12 @@ export declare namespace NavigationTypes {
   >;
 
   export type HomeStackList = {
+    HomeScreen: undefined;
+    ChatNavigator: undefined;
+    BoardNavigator: undefined;
+  };
+
+  export type HomeTabParamList = {
     HomeScreen: undefined;
     ChatNavigator: undefined;
     BoardNavigator: undefined;
