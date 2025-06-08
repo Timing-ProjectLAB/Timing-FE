@@ -22,12 +22,29 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
     {
       id: '1',
       type: 'bot',
-      text: '궁금한 내용이 있으면 물어보세요!\n어떤 질문이든지 대답할 준비가 됐어요 :)',
+      answer:
+        '궁금한 내용이 있으면 물어보세요!\n어떤 질문이든지 대답할 준비가 됐어요 :)',
     },
     {
       id: '2',
       type: 'bot',
-      text: '청년정책에 관한 챗봇입니다.\n어떤 내용을 도와드릴까요 ?',
+      answer: '청년정책에 관한 챗봇입니다.\n어떤 내용을 도와드릴까요 ?',
+    },
+  ];
+
+  const sampleMessages: Message[] = [
+    // api에서 받아온 메시지 예시
+    {
+      id: '3',
+      type: 'bot',
+      policy_id: '1234567',
+      answer: '서울시 청년 수당에 지원할 수 있습니다.',
+    },
+    {
+      id: '4',
+      type: 'bot',
+      policy_id: '2345678',
+      answer: '서울시 청년 창업 지원 프로그램에 참여할 수 있습니다.',
     },
   ];
 
@@ -41,7 +58,7 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
     const userMsg: Message = {
       id: Date.now().toString(),
       type: 'user',
-      text: input.trim(),
+      answer: input.trim(),
     };
 
     setMessages(prev => [...prev, userMsg]);
@@ -54,36 +71,19 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
       });
 
       const raw = res.data.answer || '';
-      const cleaned = raw.replace(/^{"answer":\s*"/, '').replace(/"}$/, '');
-      const lines = cleaned
-        .split('\\n')
-        .map((l: string) => l.trim())
-        .filter(Boolean);
 
-      const parsedMsgs: Message[] = [];
+      const botMsg: Message = {
+        id: Date.now().toString(),
+        type: 'bot',
+        answer: raw,
+      };
 
-      lines.forEach((line: string, idx: string) => {
-        const [titleRaw, descRaw] = line.split('**:').map(s => s.trim());
-
-        const title =
-          titleRaw?.replace(/^-?\s*\*\*/, '').replace(/\*\*$/, '') ?? '';
-        const desc = descRaw?.replace(/\*\*/g, '') ?? '';
-
-        const text = `${title}\n${desc}\n더보기 >`;
-
-        parsedMsgs.push({
-          id: `${Date.now()}-${idx}`,
-          type: 'bot',
-          text,
-        });
-      });
-
-      setMessages(prev => [...prev, ...parsedMsgs]);
+      setMessages(prev => [...prev, botMsg]);
     } catch (error: any) {
       const errorMsg: Message = {
         id: Date.now().toString(),
         type: 'bot',
-        text: '서버 오류로 답변을 불러오지 못했어요.',
+        answer: '서버 오류로 답변을 불러오지 못했어요.',
       };
       setMessages(prev => [...prev, errorMsg]);
     }
@@ -116,6 +116,8 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
           <>
             <ChatBubble message={initialMessages[0]} navigation={navigation} />
             <ChatBubble message={initialMessages[1]} navigation={navigation} />
+            {/* 샘플 메시지 */}
+            <ChatBubble message={sampleMessages[0]} navigation={navigation} />
           </>
         )}
         renderItem={({ item }) => (
