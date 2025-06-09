@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { NavigationTypes } from '../navigations/NavigationTypes';
 
 export type Message = {
   id: string;
-  policy_id?: string;
   type: 'bot' | 'user';
-  text: string;
+  policy_id?: string;
+  answer: string;
 };
 
 interface ChatBubbleProps {
@@ -20,16 +20,18 @@ export default function ChatBubble({ message, navigation }: ChatBubbleProps) {
   return (
     <Pressable
       className={`mb-2 px-4 ${isBot ? 'items-start' : 'items-end'}`}
-      onPress={() =>
-        navigation.navigate('InformScreen', { policy_id: message.id })
-      }
+      onPress={() => {
+        if (message.policy_id) {
+          navigation.navigate('InformScreen', { policy_id: message.policy_id });
+        }
+      }}
     >
       <View
         className={`max-w-[80%] rounded-xl px-4 py-3 shadow-sm ${
           isBot ? 'bg-white' : 'bg-[#D0EFFF]'
         }`}
       >
-        <Text className="text-base">{message.text}</Text>
+        <Text className="text-base">{message.answer}</Text>
       </View>
     </Pressable>
   );
