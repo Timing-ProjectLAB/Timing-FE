@@ -22,12 +22,12 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
     {
       id: '1',
       type: 'bot',
-      text: '궁금한 내용이 있으면 물어보세요!\n어떤 질문이든지 대답할 준비가 됐어요 :)',
+      answer: '궁금한 내용이 있으면 물어보세요!\n어떤 질문이든지 대답할 준비가 됐어요 :)',
     },
     {
       id: '2',
       type: 'bot',
-      text: '청년정책에 관한 챗봇입니다.\n어떤 내용을 도와드릴까요 ?',
+      answer: '청년정책에 관한 챗봇입니다.\n어떤 내용을 도와드릴까요 ?',
     },
   ];
 
@@ -41,7 +41,7 @@ const handleSend = async () => {
   const userMsg: Message = {
     id: Date.now().toString(),
     type: 'user',
-    text: input.trim(),
+    answer: input.trim(),
   };
 
   setMessages(prev => [...prev, userMsg]);
@@ -53,40 +53,49 @@ const handleSend = async () => {
       question: input.trim(),
     });
 
-    // 🔥 여기서 정책 ID 로그 출력
-    console.log('📌 받은 정책 ID 목록:', res.data);
+    console.log('📦 전체 응답 데이터:', JSON.stringify(res.data, null, 2));
+    console.log('📌 받은 정책 ID 목록:', res.data.policy_id);
 
-    const raw = res.data.answer || '';
-    const cleaned = raw.replace(/^{"answer":\s*"/, '').replace(/"}$/, '');
-    const lines = cleaned
-      .split('\\n')
-      .map((l: string) => l.trim())
-      .filter(Boolean);
+const raw = res.data.answer || '';
+let parsedAnswer = '';
 
-    const parsedMsgs: Message[] = [];
+try {
+  const inner = JSON.parse(raw); // 예: { answer: "- **제목**: 설명\\n- **제목2**: 설명2 ..." }
+  parsedAnswer = inner.answer || '';
+} catch (err) {
+  console.error('❌ 내부 JSON 파싱 실패:', err);
+  throw new Error('서버 응답 포맷이 올바르지 않습니다.');
+}
 
-    lines.forEach((line: string, idx: string) => {
-      const [titleRaw, descRaw] = line.split('**:').map(s => s.trim());
+const lines = parsedAnswer
+  .split('\\n')
+  .map((l: string) => l.trim())
+  .filter(Boolean);
 
-      const title =
-        titleRaw?.replace(/^-?\s*\*\*/, '').replace(/\*\*$/, '') ?? '';
-      const desc = descRaw?.replace(/\*\*/g, '') ?? '';
+const parsedMsgs: Message[] = lines.map((line, idx) => {
+  const [titleRaw, descRaw] = line.split('**:').map(s => s.trim());
 
-      const text = `${title}\n${desc}\n더보기 >`;
+  const title = titleRaw?.replace(/^-?\s*\*\*/, '').replace(/\*\*$/, '') ?? '';
+  const desc = descRaw?.replace(/\*\*/g, '') ?? '';
+  const text = `${title}\n${desc}\n더보기 >`;
 
-      parsedMsgs.push({
-        id: `${Date.now()}-${idx}`,
-        type: 'bot',
-        text,
-      });
-    });
+  return {
+    id: `${Date.now()}-${idx}`,
+    type: 'bot',
+    answer: text,
+    policy_id: res.data.policy_id?.[idx] ?? null,
+  };
+});
 
-    setMessages(prev => [...prev, ...parsedMsgs]);
+setMessages(prev => [...prev, ...parsedMsgs]);
+
+
   } catch (error: any) {
+    console.error('❌ [서버 응답 에러]:', error.response?.data || error.message);
     const errorMsg: Message = {
       id: Date.now().toString(),
       type: 'bot',
-      text: '서버 오류로 답변을 불러오지 못했어요.',
+      answer: '서버 오류로 답변을 불러오지 못했어요.',
     };
     setMessages(prev => [...prev, errorMsg]);
   }
