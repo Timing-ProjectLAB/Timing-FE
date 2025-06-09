@@ -1,4 +1,3 @@
-// api/chat.ts
 import api from './api';
 
 export const sendQuestion = async ({

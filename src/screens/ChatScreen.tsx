@@ -35,59 +35,62 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
   const [input, setInput] = useState('');
   const { userInfo } = useUser();
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+const handleSend = async () => {
+  if (!input.trim()) return;
 
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      text: input.trim(),
-    };
-
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
-
-    try {
-      const res = await sendQuestion({
-        user_id: userInfo.userId,
-        question: input.trim(),
-      });
-
-      const raw = res.data.answer || '';
-      const cleaned = raw.replace(/^{"answer":\s*"/, '').replace(/"}$/, '');
-      const lines = cleaned
-        .split('\\n')
-        .map((l: string) => l.trim())
-        .filter(Boolean);
-
-      const parsedMsgs: Message[] = [];
-
-      lines.forEach((line: string, idx: string) => {
-        const [titleRaw, descRaw] = line.split('**:').map(s => s.trim());
-
-        const title =
-          titleRaw?.replace(/^-?\s*\*\*/, '').replace(/\*\*$/, '') ?? '';
-        const desc = descRaw?.replace(/\*\*/g, '') ?? '';
-
-        const text = `${title}\n${desc}\n더보기 >`;
-
-        parsedMsgs.push({
-          id: `${Date.now()}-${idx}`,
-          type: 'bot',
-          text,
-        });
-      });
-
-      setMessages(prev => [...prev, ...parsedMsgs]);
-    } catch (error: any) {
-      const errorMsg: Message = {
-        id: Date.now().toString(),
-        type: 'bot',
-        text: '서버 오류로 답변을 불러오지 못했어요.',
-      };
-      setMessages(prev => [...prev, errorMsg]);
-    }
+  const userMsg: Message = {
+    id: Date.now().toString(),
+    type: 'user',
+    text: input.trim(),
   };
+
+  setMessages(prev => [...prev, userMsg]);
+  setInput('');
+
+  try {
+    const res = await sendQuestion({
+      user_id: userInfo.userId,
+      question: input.trim(),
+    });
+
+    // 🔥 여기서 정책 ID 로그 출력
+    console.log('📌 받은 정책 ID 목록:', res.data);
+
+    const raw = res.data.answer || '';
+    const cleaned = raw.replace(/^{"answer":\s*"/, '').replace(/"}$/, '');
+    const lines = cleaned
+      .split('\\n')
+      .map((l: string) => l.trim())
+      .filter(Boolean);
+
+    const parsedMsgs: Message[] = [];
+
+    lines.forEach((line: string, idx: string) => {
+      const [titleRaw, descRaw] = line.split('**:').map(s => s.trim());
+
+      const title =
+        titleRaw?.replace(/^-?\s*\*\*/, '').replace(/\*\*$/, '') ?? '';
+      const desc = descRaw?.replace(/\*\*/g, '') ?? '';
+
+      const text = `${title}\n${desc}\n더보기 >`;
+
+      parsedMsgs.push({
+        id: `${Date.now()}-${idx}`,
+        type: 'bot',
+        text,
+      });
+    });
+
+    setMessages(prev => [...prev, ...parsedMsgs]);
+  } catch (error: any) {
+    const errorMsg: Message = {
+      id: Date.now().toString(),
+      type: 'bot',
+      text: '서버 오류로 답변을 불러오지 못했어요.',
+    };
+    setMessages(prev => [...prev, errorMsg]);
+  }
+};
 
   return (
     <KeyboardAvoidingView
