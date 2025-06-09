@@ -14,6 +14,34 @@ interface ChatBubbleProps {
   navigation: NavigationTypes.ChatScreenProps['navigation'];
 }
 
+const renderFormattedText = (text: string) => {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g); // **굵은 텍스트** 구간 나누기
+
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      const boldText = part.replace(/\*\*/g, '');
+      return (
+        <Text
+          key={index}
+          style={{
+            fontWeight: 'bold',
+            fontSize: 18, // 기본보다 3~4pt 증가
+            color: '#000',
+          }}
+        >
+          {boldText}
+        </Text>
+      );
+    } else {
+      return (
+        <Text key={index} style={{ fontSize: 14, color: '#000' }}>
+          {part}
+        </Text>
+      );
+    }
+  });
+};
+
 export default function ChatBubble({ message, navigation }: ChatBubbleProps) {
   const isBot = message.type === 'bot';
 
@@ -31,7 +59,7 @@ export default function ChatBubble({ message, navigation }: ChatBubbleProps) {
           isBot ? 'bg-white' : 'bg-[#D0EFFF]'
         }`}
       >
-        <Text className="text-base">{message.answer}</Text>
+        <Text>{renderFormattedText(message.answer)}</Text>
       </View>
     </Pressable>
   );

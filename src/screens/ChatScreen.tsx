@@ -53,26 +53,23 @@ const handleSend = async () => {
       question: input.trim(),
     });
 
-    console.log('📦 전체 응답 데이터:', JSON.stringify(res.data, null, 2));
-    console.log('📌 받은 정책 ID 목록:', res.data.policy_id);
+    console.log('📦 전체 응답 데이터 (string):', res.data);
 
-const raw = res.data.answer || '';
-let parsedAnswer = '';
+// ...
+const outerParsed = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+const innerParsed = typeof outerParsed.answer === 'string' ? JSON.parse(outerParsed.answer) : outerParsed.answer;
 
-try {
-  const inner = JSON.parse(raw); // 예: { answer: "- **제목**: 설명\\n- **제목2**: 설명2 ..." }
-  parsedAnswer = inner.answer || '';
-} catch (err) {
-  console.error('❌ 내부 JSON 파싱 실패:', err);
-  throw new Error('서버 응답 포맷이 올바르지 않습니다.');
-}
+const rawAnswer = innerParsed.answer || '';
 
-const lines = parsedAnswer
-  .split('\\n')
-  .map((l: string) => l.trim())
+// ✅ 실제 줄바꿈 문자 기준으로 나눔
+const splitLines = rawAnswer
+  .split('\n') // 핵심: 문자열 안의 줄바꿈
+  .map(line => line.trim())
   .filter(Boolean);
 
-const parsedMsgs: Message[] = lines.map((line, idx) => {
+console.log('✅ 실제 분리된 라인:', splitLines);
+
+const parsedMsgs: Message[] = splitLines.map((line, idx) => {
   const [titleRaw, descRaw] = line.split('**:').map(s => s.trim());
 
   const title = titleRaw?.replace(/^-?\s*\*\*/, '').replace(/\*\*$/, '') ?? '';
@@ -83,11 +80,12 @@ const parsedMsgs: Message[] = lines.map((line, idx) => {
     id: `${Date.now()}-${idx}`,
     type: 'bot',
     answer: text,
-    policy_id: res.data.policy_id?.[idx] ?? null,
+    policy_id: outerParsed.policy_id?.[idx] ?? null,
   };
 });
 
 setMessages(prev => [...prev, ...parsedMsgs]);
+// ...
 
 
   } catch (error: any) {
@@ -100,6 +98,7 @@ setMessages(prev => [...prev, ...parsedMsgs]);
     setMessages(prev => [...prev, errorMsg]);
   }
 };
+
 
   return (
     <KeyboardAvoidingView
@@ -146,6 +145,12 @@ setMessages(prev => [...prev, ...parsedMsgs]);
           onSubmitEditing={handleSend}
           returnKeyType="send"
         />
+        <TouchableOpacity
+          className="absolute bottom-20 right-4 bg-white border border-gray-300 px-4 py-2 rounded-xl shadow"
+          onPress={() => navigation.navigate('InformScreen')}
+        >
+          <Text className="text-black font-semibold">샘플 정책 보기</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
