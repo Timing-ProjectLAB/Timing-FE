@@ -1,10 +1,18 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text } from 'react-native';
+import { View, Text } from 'react-native';
+
 import HomeScreen from '../screens/HomeScreen';
 import ChatNavigator from './ChatNavigator';
 import BoardNavigator from './BoardNavigator';
 import { NavigationTypes } from './NavigationTypes';
+
+// SVG 아이콘 import
+import HomeIcon from '../assets/images/bnv_home.svg';
+import ChatIcon from '../assets/images/bnv_chat.svg';
+import BoardIcon from '../assets/images/bnv_board.svg';
+import FavIcon from '../assets/images/bnv_star.svg';
+import MyPageIcon from '../assets/images/bnv_person.svg';
 
 const Tab = createBottomTabNavigator<NavigationTypes.HomeTabList>();
 
@@ -16,6 +24,27 @@ export default function HomeNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+        tabBarIcon: ({ focused }) => {
+          const iconProps = {
+            width: 24,
+            height: 24,
+          };
+
+          switch (route.name) {
+            case 'HomeScreen':
+              return <HomeIcon {...iconProps} />;
+            case 'BoardNavigator':
+              return <BoardIcon {...iconProps} />;
+            case 'ChatNavigator':
+              return <ChatIcon {...iconProps} />;
+            case 'Favorites':
+              return <FavIcon {...iconProps} />;
+            case 'MyPage':
+              return <MyPageIcon {...iconProps} />;
+            default:
+              return null;
+          }
+        },
         tabBarLabel: ({ focused }) => {
           let label = '';
           switch (route.name) {
@@ -23,7 +52,7 @@ export default function HomeNavigator() {
               label = '홈';
               break;
             case 'BoardNavigator':
-              label = '정책';
+              label = '맞춤정책';
               break;
             case 'ChatNavigator':
               label = '챗봇';
@@ -38,10 +67,11 @@ export default function HomeNavigator() {
 
           return (
             <Text
+              className="font-pre"
               style={{
                 fontSize: 12,
-                fontWeight: focused ? 'bold' : 'normal',
-                color: focused ? '#0073FF' : '#888',
+                color: focused ? '#007AFF' : '#888',
+                marginTop: 2,
               }}
             >
               {label}
@@ -49,8 +79,8 @@ export default function HomeNavigator() {
           );
         },
         tabBarStyle: {
-          height: 60,
-          paddingBottom: 5,
+          height: 64,
+          paddingTop: 4,
         },
       })}
     >

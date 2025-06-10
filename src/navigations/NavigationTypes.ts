@@ -103,6 +103,8 @@ export declare namespace NavigationTypes {
     HomeScreen: undefined;
     ChatNavigator: undefined;
     BoardNavigator: undefined;
+    Favorites: undefined;
+    MyPage: undefined;
   };
 
   export type HomeTabParamList = {
