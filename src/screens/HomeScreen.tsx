@@ -10,7 +10,7 @@ import { NavigationTypes } from '../navigations/NavigationTypes';
 import ChatIcon from '../assets/images/chatIcon.svg';
 import HomeIcon from '../assets/images/homeIcon.svg';
 import QuestionIcon from '../assets/images/questionIcon.svg';
-import { getMainPolicies } from '../../api/policy'; // ⬅️ API 함수
+import api from '../../api/api';  // Axios 인스턴스
 import { useUser } from '../contexts/UserContext';
 
 type Policy = {
@@ -29,19 +29,18 @@ export default function HomeScreen(props: NavigationTypes.HomeScreenProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPolicies = async () => {
-      try {
-        const res = await getMainPolicies();
+    api.get('/policy/board/main')
+      .then(res => {
         setPopularPolicies(res.data.popularPolicies);
         setCustomPolicies(res.data.customPolicies);
-      } catch (err) {
+      })
+      .catch(err => {
         console.error('❌ 메인 정책 조회 실패:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPolicies();
+        console.log('🔗 요청 URL:', err.config.baseURL + err.config.url);
+        console.log('⚠️ 상태코드:', err.response?.status);
+        console.log('⚠️ 응답 데이터:', err.response?.data);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   function renderTag(deadline: string) {
