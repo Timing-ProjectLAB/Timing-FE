@@ -99,10 +99,12 @@ export declare namespace NavigationTypes {
     'BoardScreen'
   >;
 
-  export type HomeStackList = {
+  export type HomeTabList = {
     HomeScreen: undefined;
     ChatNavigator: undefined;
     BoardNavigator: undefined;
+    Favorites: undefined;
+    MyPage: undefined;
   };
 
   export type HomeTabParamList = {
@@ -111,5 +113,5 @@ export declare namespace NavigationTypes {
     BoardNavigator: undefined;
   };
 
-  export type HomeScreenProps = StackScreenProps<HomeStackList, 'HomeScreen'>;
+  export type HomeScreenProps = StackScreenProps<HomeTabList, 'HomeScreen'>;
 }
