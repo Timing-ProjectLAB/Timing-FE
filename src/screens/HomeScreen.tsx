@@ -44,8 +44,26 @@ export default function HomeScreen(props: NavigationTypes.HomeScreenProps) {
   }, []);
 
   function renderTag(deadline: string) {
-    const isUrgent = deadline.startsWith('D-');
-    const bgColor = isUrgent ? 'bg-[#FF4D4F]' : 'bg-[#0073FF]';
+    // If deadline matches yyyy.MM.dd, compute D-day
+    const datePattern = /^\d{4}\.\d{2}\.\d{2}$/;
+    if (datePattern.test(deadline)) {
+      const target = new Date(deadline.replace(/\./g, '-'));
+      const now = new Date();
+      const diffDays = Math.ceil(
+        (target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const dday = Math.max(0, diffDays);
+      const label = `D-${dday}`;
+      const bgColor = 'bg-[#FF4D4F]';
+      return (
+        <View className={`px-3 py-1 rounded-full ${bgColor}`}>
+          <Text className="text-white text-xs font-bold">{label}</Text>
+        </View>
+      );
+    }
+    // Otherwise, preserve existing D- format or treat unknown as blue
+    const isDday = deadline.startsWith('D-');
+    const bgColor = isDday ? 'bg-[#FF4D4F]' : 'bg-[#0073FF]';
     return (
       <View className={`px-3 py-1 rounded-full ${bgColor}`}>
         <Text className="text-white text-xs font-bold">{deadline}</Text>

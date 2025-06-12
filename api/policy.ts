@@ -1,12 +1,53 @@
-// api/policy.ts
-import api from './api';
+// src/api/policy.ts
+import api from './api'
 
-// 정책 상세 조회 API
+export interface PolicyBoardResponse {
+  userId: string
+  totalCount: number
+  policies: {
+    policyName: string
+    supportSummary: string
+    applicationDeadline: string
+    keywords: string[]
+  }[]
+}
+
+/**
+ * 전체 게시판 조회
+ */
+export const getPolicyBoard = (userId: string) => {
+  return api.get<PolicyBoardResponse>(
+    `/policy/board/${userId}`,
+    {
+      withCredentials: true,
+      headers: { 'Content-Type': 'application/json' },
+    }
+  )
+}
+
 export const getPolicyDetail = (policyId: string) => {
-  return api.get(`/policy/detail/${policyId}`);
+  return api.get<PolicyDetailResponse>(
+    `/policy/detail/${policyId}`,
+    {
+      withCredentials: true,
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
 };
 
-// ✅ 메인페이지 정책 목록 조회 API
-export const getMainPolicies = () => {
-  return api.get('/policy/board/main');
-};
+/**
+ * 카테고리 필터링 게시판 조회
+ */
+export const getPolicyBoardFiltered = (
+  userId: string,
+  category: string
+) => {
+  return api.get<PolicyBoardResponse>(
+    `/policy/board/filter/${userId}`,
+    {
+      params: { category },
+      withCredentials: true,
+      headers: { 'Content-Type': 'application/json' },
+    }
+  )
+}

@@ -1,61 +1,72 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import Person from '../assets/images/person.svg';
 import Box from '../assets/images/box.svg';
 import { NavigationTypes } from '../navigations/NavigationTypes';
+import { useUser } from '../contexts/UserContext';
+import {
+  PolicyBoardResponse,
+  getPolicyBoard,
+} from '../../api/policy';
 
-type Policy = {
-  policyName: string;
-  supportSummary: string;
-  applicationDeadline: string;
-  keywords: string[];
-};
+type Policy = PolicyBoardResponse['policies'][0];
 
 export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
+  const { navigation } = props;
+  const { userInfo } = useUser();
+
   const [filter, setFilter] = useState<string>('전체');
   const [policies, setPolicies] = useState<Policy[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const categories = ['전체', '복지문화', '취업지원', '주거금융', '기타'];
 
-  // 초기에는 전체 카테고리 로드
   useEffect(() => {
-    handleCategory('전체');
+    fetchPolicies('전체');
   }, []);
 
-  const handleCategory = async (category: string) => {
+  const fetchPolicies = async (category: string) => {
     setFilter(category);
+    setLoading(true);
+    try {
+      // Always fetch full list
+      const res = await getPolicyBoard(userInfo.userId);
+      const all = res.data.policies;
+      // Update totalCount only for 전체
 
-    if (category === '전체') {
-      const sampleData: Policy[] = [
-        {
-          policyName: '주거안정장학금',
-          supportSummary: '월 최대 20만 원 지원',
-          applicationDeadline: '2025.06.23',
-          keywords: ['주거', '복지문화'],
-        },
-        {
-          policyName: '부산디지털혁신아카데미 BDIA',
-          supportSummary: '최대 50만원 교육 바우처',
-          applicationDeadline: '정보없음',
-          keywords: ['교육', '복지문화'],
-        },
-      ];
-      setPolicies(sampleData);
-    } else {
-      try {
-        const mockData: Policy[] = [
-          {
-            policyName: `[${category}] 지원 정책 예시`,
-            supportSummary: `${category} 분야의 혜택을 제공합니다.`,
-            applicationDeadline: '정보없음',
-            keywords: [category],
-          },
-        ];
-        setPolicies(mockData);
-      } catch (error) {
-        console.error('API 요청 실패:', error);
-        setPolicies([]);
+      const primaryCats = ['복지문화', '취업지원', '주거금융'];
+      let filtered: Policy[];
+      if (category === '전체') {
+        filtered = all;
+      } else if (category === '기타') {
+        // Not matching any primary category
+        filtered = all.filter(p => !(p.keywords ?? []).some(k => primaryCats.includes(k)));
+        } else {
+        filtered = all.filter(p => (p.keywords ?? []).includes(category));
       }
+      // Exclude expired policies
+      const datePattern = /^\d{4}\.\d{2}\.\d{2}$/;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const nonExpired = filtered.filter(p => {
+        if (datePattern.test(p.applicationDeadline)) {
+          const d = new Date(p.applicationDeadline.replace(/\./g, '-'));
+          return d.getTime() >= today.getTime();
+        }
+        return true;
+      });
+      setPolicies(nonExpired);
+      // Update count only for 전체
+      if (category === '전체') {
+        setTotalCount(nonExpired.length);
+      }
+  } catch (error) {
+      console.error('API 요청 실패:', error);
+      setPolicies([]);
+      setTotalCount(0);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,14 +82,14 @@ export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
         return (
           <Pressable
             key={idx}
-            onPress={() => handleCategory(category)}
+            onPress={() => fetchPolicies(category)}
             className={`px-4 py-2 mr-2 rounded-full ${
               isSelected ? 'bg-blue-600' : 'bg-gray-200'
             }`}
           >
-            <Text
-              className={`text-sm ${isSelected ? 'text-white' : 'text-black'}`}
-            >
+            <Text className={`text-sm ${
+              isSelected ? 'text-white' : 'text-black'
+            }`}>
               {category}
             </Text>
           </Pressable>
@@ -88,20 +99,18 @@ export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
   );
 
   const renderPolicyCard = (policy: Policy, index: number) => {
-    const isOngoing = policy.applicationDeadline === '정보없음';
-
+const isOngoing = !/^\d{4}\.\d{2}\.\d{2}$/.test(policy.applicationDeadline);
     let tagLabel = '상시';
     let tagColor = 'bg-blue-600';
 
     if (!isOngoing) {
       const parsedDate = new Date(
-        policy.applicationDeadline.replace(/\./g, '-'),
+        policy.applicationDeadline.replace(/\./g, '-')
       );
       const now = new Date();
       const diffDays = Math.ceil(
-        (parsedDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+        (parsedDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
       );
-
       tagLabel = `D-${Math.max(0, diffDays)} 마감`;
       tagColor = 'bg-[#FF4D4F]';
     }
@@ -124,7 +133,7 @@ export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
           {isOngoing ? '상시 모집' : `${policy.applicationDeadline} 마감`}
         </Text>
         <View className="flex-row flex-wrap">
-          {policy.keywords.map((kw, i) => (
+          {(policy.keywords ?? []).map((kw, i) => (
             <View
               key={i}
               className="bg-gray-100 border border-gray-300 px-2 py-1 mr-2 mb-1 rounded-full"
@@ -142,7 +151,9 @@ export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
       <ScrollView className="pb-6">
         {/* 상단 바 */}
         <View className="flex w-full h-[100px] justify-end pb-2 px-4 border-b border-b-gray-400">
-          <Text className="font-pre text-2xl font-medium">맞춤 정책</Text>
+          <Text className="font-pre text-2xl font-medium">
+            맞춤 정책
+          </Text>
         </View>
 
         {/* 사용자 정보 카드 */}
@@ -153,18 +164,18 @@ export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
             </View>
             <View className="flex-wrap w-2/5 h-full items-center justify-center">
               <Text className="text-white text-lg font-bold">
-                홍길동님을 위한 맞춤 정책이에요
+                {userInfo.userId}님을 위한 정책 게시판입니다.
               </Text>
             </View>
             <View className="flex w-2/5 h-full justify-center items-center space-y-3">
               <Pressable className="w-4/5 h-[40px] bg-white rounded-lg items-center justify-center">
                 <Text className="text-blue-600 text-sm font-pre">
-                  맞춤정보 수정 {'>'}
+                  필터 설정 {'>'}
                 </Text>
               </Pressable>
               <View className="flex-row bg-white rounded-full px-3 py-1 items-center justify-center">
                 <Box />
-                <Text className="ml-1 text-black font-pre">180건</Text>
+                <Text className="ml-1 text-black font-pre">{totalCount}건</Text>
               </View>
             </View>
           </View>
@@ -173,16 +184,20 @@ export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
         {/* 카테고리 필터 */}
         <View className="mt-4">{renderCategoryButtons()}</View>
 
-        {/* 카드 목록 */}
-        <View className="mt-4">
-          {policies.length > 0 ? (
-            policies.map(renderPolicyCard)
-          ) : (
-            <Text className="text-center text-gray-500 mt-4">
-              정책 정보가 없습니다.
-            </Text>
-          )}
-        </View>
+        {/* 정책 리스트 or 로딩 */}
+        {loading ? (
+          <ActivityIndicator size="large" color="#007AFF" className="mt-6" />
+        ) : (
+          <View className="mt-4">
+            {policies.length > 0 ? (
+              policies.map(renderPolicyCard)
+            ) : (
+              <Text className="text-center text-gray-500 mt-4">
+                정책 정보가 없습니다.
+              </Text>
+            )}
+          </View>
+        )}
       </ScrollView>
     </View>
   );
