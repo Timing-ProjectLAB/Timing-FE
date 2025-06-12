@@ -22,8 +22,7 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
     {
       id: '1',
       type: 'bot',
-      answer:
-        '궁금한 내용이 있으면 물어보세요!\n어떤 질문이든지 대답할 준비가 됐어요 :)',
+      answer: '궁금한 내용이 있으면 물어보세요!\n어떤 질문이든지 대답할 준비가 됐어요 :)',
     },
     {
       id: '2',
@@ -32,62 +31,74 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
     },
   ];
 
-  const sampleMessages: Message[] = [
-    // api에서 받아온 메시지 예시
-    {
-      id: '3',
-      type: 'bot',
-      policy_id: '1234567',
-      answer: '서울시 청년 수당에 지원할 수 있습니다.',
-    },
-    {
-      id: '4',
-      type: 'bot',
-      policy_id: '2345678',
-      answer: '서울시 청년 창업 지원 프로그램에 참여할 수 있습니다.',
-    },
-  ];
-
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
   const { userInfo } = useUser();
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+const handleSend = async () => {
+  if (!input.trim()) return;
 
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      answer: input.trim(),
-    };
-
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
-
-    try {
-      const res = await sendQuestion({
-        user_id: userInfo.userId,
-        question: input.trim(),
-      });
-
-      const raw = res.data.answer || '';
-
-      const botMsg: Message = {
-        id: Date.now().toString(),
-        type: 'bot',
-        answer: raw,
-      };
-
-      setMessages(prev => [...prev, botMsg]);
-    } catch (error: any) {
-      const errorMsg: Message = {
-        id: Date.now().toString(),
-        type: 'bot',
-        answer: '서버 오류로 답변을 불러오지 못했어요.',
-      };
-      setMessages(prev => [...prev, errorMsg]);
-    }
+  const userMsg: Message = {
+    id: Date.now().toString(),
+    type: 'user',
+    answer: input.trim(),
   };
+
+  setMessages(prev => [...prev, userMsg]);
+  setInput('');
+
+  try {
+    const res = await sendQuestion({
+      user_id: userInfo.userId,
+      question: input.trim(),
+    });
+
+    console.log('📦 전체 응답 데이터 (string):', res.data);
+
+// ...
+const outerParsed = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+const innerParsed = typeof outerParsed.answer === 'string' ? JSON.parse(outerParsed.answer) : outerParsed.answer;
+
+const rawAnswer = innerParsed.answer || '';
+
+// ✅ 실제 줄바꿈 문자 기준으로 나눔
+const splitLines = rawAnswer
+  .split('\n') // 핵심: 문자열 안의 줄바꿈
+  .map(line => line.trim())
+  .filter(Boolean);
+
+console.log('✅ 실제 분리된 라인:', splitLines);
+
+const parsedMsgs: Message[] = splitLines.map((line, idx) => {
+  const [titleRaw, descRaw] = line.split('**:').map(s => s.trim());
+
+  const title = titleRaw?.replace(/^-?\s*\*\*/, '').replace(/\*\*$/, '') ?? '';
+  const desc = descRaw?.replace(/\*\*/g, '') ?? '';
+  const text = `${title}\n${desc}\n더보기 >`;
+
+  return {
+    id: `${Date.now()}-${idx}`,
+    type: 'bot',
+    answer: text,
+    policy_id: outerParsed.policy_id?.[idx] ?? null,
+  };
+});
+
+setMessages(prev => [...prev, ...parsedMsgs]);
+// ...
+
+
+  } catch (error: any) {
+    console.error('❌ [서버 응답 에러]:', error.response?.data || error.message);
+    const errorMsg: Message = {
+      id: Date.now().toString(),
+      type: 'bot',
+      answer: '서버 오류로 답변을 불러오지 못했어요.',
+    };
+    setMessages(prev => [...prev, errorMsg]);
+  }
+};
+
 
   return (
     <KeyboardAvoidingView
@@ -116,8 +127,6 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
           <>
             <ChatBubble message={initialMessages[0]} navigation={navigation} />
             <ChatBubble message={initialMessages[1]} navigation={navigation} />
-            {/* 샘플 메시지 */}
-            <ChatBubble message={sampleMessages[0]} navigation={navigation} />
           </>
         )}
         renderItem={({ item }) => (
@@ -136,6 +145,12 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
           onSubmitEditing={handleSend}
           returnKeyType="send"
         />
+        <TouchableOpacity
+          className="absolute bottom-20 right-4 bg-white border border-gray-300 px-4 py-2 rounded-xl shadow"
+          onPress={() => navigation.navigate('InformScreen')}
+        >
+          <Text className="text-black font-semibold">샘플 정책 보기</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );

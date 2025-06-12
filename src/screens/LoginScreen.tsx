@@ -88,8 +88,7 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
             <View className="flex w-full h-2/3 items-center justify-center my-2">
               <Pressable
                 className="flex w-5/6 h-[50px] bg-[#007AFF] rounded-xl items-center justify-center"
-                onPress={() => navigation.navigate('HomeStackNavigator')}
-              >
+                onPress={handleLogin}              >
                 <Text className="font-inter font-bold text-white text-2xl">
                   로그인
                 </Text>
