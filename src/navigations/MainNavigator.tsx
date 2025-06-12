@@ -5,6 +5,7 @@ import RegisterNavigatior from './RegisterNavigator';
 import ChatNavigator from './ChatNavigator';
 import HomeNavigator from './HomeNavigator';
 import BoardNavigator from './BoardNavigator';
+import HomeStackNavigator from './HomeStackNavigator';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationTypes } from './NavigationTypes';
 
@@ -40,6 +41,11 @@ function MainNavigator() {
       <Stack.Screen
         name="BoardNavigator"
         component={BoardNavigator}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="HomeStackNavigator"
+        component={HomeStackNavigator}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

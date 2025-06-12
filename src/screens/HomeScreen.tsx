@@ -6,63 +6,109 @@ import HomeIcon from '../assets/images/homeIcon.svg';
 import QuestionIcon from '../assets/images/questionIcon.svg';
 
 type Policy = {
-  policy_name: string;
-  application_period: string;
-  policy_description: string;
+  policy_id: string;
+  policyName: string;
+  supportSummary: string;
+  applicationDeadline: string;
+  inquiryCount: number;
 };
 
 const popularPolicies: Policy[] = [
   {
-    policy_name: '청년희망적금',
-    application_period: 'D-3',
-    policy_description:
-      '목돈 마련을 위한 정부 지원 적금입니다. 최대 3년까지 지원됩니다.',
+    policy_id: '20250521005400110863',
+    policyName: '주거안정장학금',
+    supportSummary: '지원금액: 월 최대 20만 원',
+    applicationDeadline: '2025.06.23',
+    inquiryCount: 1552,
   },
   {
-    policy_name: '내일배움카드',
-    application_period: '상시',
-    policy_description:
-      '직업 훈련 비용을 지원하여 취업 준비를 돕는 제도입니다.',
+    policy_id: '20250519005400210851',
+    policyName: '서울 영테크',
+    supportSummary: '무료 재무상담(대면, 비대면) 및 금융교육, 커뮤니티 운영',
+    applicationDeadline: '2025.11.30',
+    inquiryCount: 742,
   },
   {
-    policy_name: '주거 안정 지원금',
-    application_period: 'D-7',
-    policy_description:
-      '월세 부담을 줄여주는 주거 지원금으로 안정적인 생활을 돕습니다.',
+    policy_id: '20250520005400210862',
+    policyName: '부산 청년돌봄이음',
+    supportSummary: '1. 청년 돌봄이음 시범사업(제공기관 : 종합사회복지관)...',
+    applicationDeadline: '상시',
+    inquiryCount: 254,
   },
 ];
 
-const personalizedPolicies: Policy[] = [...popularPolicies]; // 예시로 동일하게 사용
+const customPolicies: Policy[] = [
+  {
+    policy_id: '20250521005400110863',
+    policyName: '주거안정장학금',
+    supportSummary: '지원금액: 월 최대 20만 원',
+    applicationDeadline: '2025.06.23',
+    inquiryCount: 1552,
+  },
+  {
+    policy_id: '20250520005400210862',
+    policyName: '부산 청년돌봄이음',
+    supportSummary: '1. 청년 돌봄이음 시범사업(제공기관 : 종합사회복지관)...',
+    applicationDeadline: '상시',
+    inquiryCount: 254,
+  },
+  {
+    policy_id: '20250529005400210880',
+    policyName: '2025년 화성시 청년정책 아이디어 공모전',
+    supportSummary: '접수기간: 2025. 6. 2.(월) ~ 6. 20.(금)',
+    applicationDeadline: '2025.06.20',
+    inquiryCount: 92,
+  },
+];
 
-function renderTag(period: string) {
-  const isUrgent = period.startsWith('D-');
-  const bgColor = isUrgent ? 'bg-[#FF4D4F]' : 'bg-[#0073FF]';
+const renderTag = (applicationDeadline: string) => {
+  const isOngoing =
+    applicationDeadline === '상시' || applicationDeadline === '정보없음';
+
+  let tagLabel = '상시';
+  let tagColor = 'bg-blue-600';
+
+  if (!isOngoing) {
+    const parsedDate = new Date(applicationDeadline.replace(/\./g, '-'));
+    const now = new Date();
+    const diffDays = Math.ceil(
+      (parsedDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+    );
+
+    tagLabel = `D-${Math.max(0, diffDays)}`;
+    tagColor = 'bg-[#FF4D4F]';
+  }
+
   return (
-    <View className={`px-3 py-1 rounded-full ${bgColor}`}>
-      <Text className="text-white text-xs font-bold">{period}</Text>
+    <View className={`px-2 py-1 rounded-full ${tagColor}`}>
+      <Text className="text-white text-xs font-semibold">{tagLabel}</Text>
     </View>
   );
-}
+};
 
-function renderPolicyCard(policy: Policy) {
-  return (
-    <View
-      key={policy.policy_name}
-      className="flex flex-row items-start justify-between w-full bg-white p-3 rounded-xl mb-2 border border-gray-300"
-    >
-      <View className="flex flex-col space-y-1 w-full">
-        <View className="flex-row w-full">
-          <View className="mr-1">{renderTag(policy.application_period)}</View>
-          <Text className="text-base font-bold">{policy.policy_name}</Text>
+const renderPolicyCardWithNav =
+  (navigation: NavigationTypes.HomeScreenProps['navigation']) =>
+  (policy: Policy) =>
+    (
+      // props로 policy_id 함께 전송
+      <Pressable
+        key={policy.policy_id}
+        className="flex flex-row items-start justify-between w-full bg-white p-3 rounded-xl mb-2 border border-gray-300"
+        onPress={() =>
+          navigation.navigate('InformScreen', { policy_id: policy.policy_id })
+        }
+      >
+        <View className="flex flex-col space-y-1 w-full">
+          <View className="flex-row w-full">
+            <View className="mr-1">
+              {renderTag(policy.applicationDeadline)}
+            </View>
+            <Text className="text-base font-bold">{policy.policyName}</Text>
+          </View>
+          <Text className="text-sm text-gray-600">{policy.supportSummary}</Text>
         </View>
-
-        <Text className="text-sm text-gray-600">
-          {policy.policy_description}
-        </Text>
-      </View>
-    </View>
-  );
-}
+      </Pressable>
+    );
 
 export default function HomeScreen(props: NavigationTypes.HomeScreenProps) {
   const { navigation } = props;
@@ -88,7 +134,6 @@ export default function HomeScreen(props: NavigationTypes.HomeScreenProps) {
             </Text>
           </Pressable>
 
-          {/* 질문 리스트 */}
           {[
             {
               icon: <ChatIcon width={18} height={18} />,
@@ -117,7 +162,7 @@ export default function HomeScreen(props: NavigationTypes.HomeScreenProps) {
         <View className="flex w-full py-4 items-center justify-center">
           <View className="flex w-11/12 mb-2">
             <Text className="font-bold text-xl mb-2">인기 정책</Text>
-            {popularPolicies.map(renderPolicyCard)}
+            {popularPolicies.map(renderPolicyCardWithNav(navigation))}
           </View>
         </View>
 
@@ -125,9 +170,10 @@ export default function HomeScreen(props: NavigationTypes.HomeScreenProps) {
         <View className="flex w-full items-center py-4 bg-white">
           <View className="w-11/12 mb-2">
             <Text className="font-bold text-xl mb-2">맞춤 정책</Text>
-            {personalizedPolicies.map(renderPolicyCard)}
+            {customPolicies.map(renderPolicyCardWithNav(navigation))}
           </View>
         </View>
+        <View className="flex w-full h-[50px]" />
       </ScrollView>
     </View>
   );

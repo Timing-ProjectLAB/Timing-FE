@@ -5,10 +5,17 @@ import Box from '../assets/images/box.svg';
 import { NavigationTypes } from '../navigations/NavigationTypes';
 
 type Policy = {
+  policy_id: string;
   policyName: string;
   supportSummary: string;
   applicationDeadline: string;
   keywords: string[];
+};
+
+type Info = {
+  userId: string;
+  totalCount: number;
+  policies: Policy[];
 };
 
 export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
@@ -28,23 +35,36 @@ export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
     if (category === '전체') {
       const sampleData: Policy[] = [
         {
-          policyName: '주거안정장학금',
-          supportSummary: '월 최대 20만 원 지원',
-          applicationDeadline: '2025.06.23',
-          keywords: ['주거', '복지문화'],
+          policy_id: '20250521005400110863',
+          policyName: '2025년 화성시 청년정책 아이디어 공모전',
+          supportSummary: '❍ 접수기간: 2025. 6. 2.(월) ~ 6. 20.(금)',
+          applicationDeadline: '2025.06.20',
+          keywords: ['교육지원'],
         },
         {
+          policy_id: '20250521005400110863',
           policyName: '부산디지털혁신아카데미 BDIA',
-          supportSummary: '최대 50만원 교육 바우처',
+          supportSummary:
+            '□ 사업대상 : 대학졸업(예정)자, 취업준비생, 미취업자 등 지역청년',
           applicationDeadline: '정보없음',
-          keywords: ['교육', '복지문화'],
+          keywords: ['교육지원'],
+        },
+        {
+          policy_id: '20250521005400110863',
+          policyName: '서울 영테크',
+          supportSummary:
+            '무료 재무상담(대면, 비대면) 및 금융교육, 커뮤니티 운영',
+          applicationDeadline: '2025.11.30',
+          keywords: ['맞춤형상담서비스'],
         },
       ];
+
       setPolicies(sampleData);
     } else {
       try {
         const mockData: Policy[] = [
           {
+            policy_id: '',
             policyName: `[${category}] 지원 정책 예시`,
             supportSummary: `${category} 분야의 혜택을 제공합니다.`,
             applicationDeadline: '정보없음',
@@ -87,7 +107,11 @@ export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
     </ScrollView>
   );
 
-  const renderPolicyCard = (policy: Policy, index: number) => {
+  const renderPolicyCard = (
+    policy: Policy,
+    index: number,
+    navigation: NavigationTypes.BoardScreenProps['navigation'],
+  ) => {
     const isOngoing = policy.applicationDeadline === '정보없음';
 
     let tagLabel = '상시';
@@ -102,14 +126,17 @@ export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
         (parsedDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
       );
 
-      tagLabel = `D-${Math.max(0, diffDays)} 마감`;
+      tagLabel = `D-${Math.max(0, diffDays)}`;
       tagColor = 'bg-[#FF4D4F]';
     }
 
     return (
-      <View
+      <Pressable
         key={index}
         className="bg-white border border-gray-300 rounded-xl px-4 py-3 mb-3 mx-4"
+        onPress={() =>
+          navigation.navigate('InformScreen', { policy_id: policy.policy_id })
+        }
       >
         <View className="flex-row justify-between mb-2">
           <Text className="font-bold text-base">{policy.policyName}</Text>
@@ -133,7 +160,7 @@ export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
             </View>
           ))}
         </View>
-      </View>
+      </Pressable>
     );
   };
 
@@ -164,6 +191,7 @@ export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
               </Pressable>
               <View className="flex-row bg-white rounded-full px-3 py-1 items-center justify-center">
                 <Box />
+                {/* API 연동 이후 totalCount로 변경 */}
                 <Text className="ml-1 text-black font-pre">180건</Text>
               </View>
             </View>
@@ -176,13 +204,16 @@ export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
         {/* 카드 목록 */}
         <View className="mt-4">
           {policies.length > 0 ? (
-            policies.map(renderPolicyCard)
+            policies.map((policy, index) =>
+              renderPolicyCard(policy, index, props.navigation),
+            )
           ) : (
             <Text className="text-center text-gray-500 mt-4">
               정책 정보가 없습니다.
             </Text>
           )}
         </View>
+        <View className="flex w-full h-[40px]" />
       </ScrollView>
     </View>
   );
