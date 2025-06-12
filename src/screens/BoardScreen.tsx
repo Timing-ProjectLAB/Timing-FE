@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Person from '../assets/images/person.svg';
 import Box from '../assets/images/box.svg';
 import { NavigationTypes } from '../navigations/NavigationTypes';
@@ -7,20 +8,22 @@ import { useUser } from '../contexts/UserContext';
 import {
   PolicyBoardResponse,
   getPolicyBoard,
+  getPolicyBoardFiltered,
 } from '../../api/policy';
 
-type Policy = PolicyBoardResponse['policies'][0];
+type Policy = PolicyBoardResponse['policies'][0] & { policyId: string };
 
 export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
   const { navigation } = props;
   const { userInfo } = useUser();
+  const insets = useSafeAreaInsets();
 
   const [filter, setFilter] = useState<string>('전체');
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const categories = ['전체', '복지문화', '취업지원', '주거금융', '기타'];
+  const categories = ['전체', '복지문화', '일자리', '주거', '교육', '기타'];
 
   useEffect(() => {
     fetchPolicies('전체');
@@ -30,26 +33,24 @@ export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
     setFilter(category);
     setLoading(true);
     try {
-      // Always fetch full list
-      const res = await getPolicyBoard(userInfo.userId);
-      const all = res.data.policies;
-      // Update totalCount only for 전체
-
-      const primaryCats = ['복지문화', '취업지원', '주거금융'];
-      let filtered: Policy[];
+      let res;
       if (category === '전체') {
-        filtered = all;
-      } else if (category === '기타') {
-        // Not matching any primary category
-        filtered = all.filter(p => !(p.keywords ?? []).some(k => primaryCats.includes(k)));
-        } else {
-        filtered = all.filter(p => (p.keywords ?? []).includes(category));
+        res = await getPolicyBoard(userInfo.userId);
+      } else {
+        // Map UI '기타' to backend keyword '참여권리'
+        const apiCategory = category === '기타' ? '참여권리' : category;
+        res = await getPolicyBoardFiltered(userInfo.userId, apiCategory);
       }
+      const all = res.data.policies;
+      // Ensure each policy object has a policyId field
+      const withId: Policy[] = all.map(p => ({
+        ...p,
+        policyId: (p as any).policyId || (p as any).policy_id,
+      }));
       // Exclude expired policies
       const datePattern = /^\d{4}\.\d{2}\.\d{2}$/;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const nonExpired = filtered.filter(p => {
+      const today = new Date(); today.setHours(0,0,0,0);
+      const nonExpired = withId.filter(p => {
         if (datePattern.test(p.applicationDeadline)) {
           const d = new Date(p.applicationDeadline.replace(/\./g, '-'));
           return d.getTime() >= today.getTime();
@@ -61,7 +62,7 @@ export default function BoardScreen(props: NavigationTypes.BoardScreenProps) {
       if (category === '전체') {
         setTotalCount(nonExpired.length);
       }
-  } catch (error) {
+    } catch (error) {
       console.error('API 요청 실패:', error);
       setPolicies([]);
       setTotalCount(0);
@@ -135,7 +136,7 @@ const isOngoing = !/^\d{4}\.\d{2}\.\d{2}$/.test(policy.applicationDeadline);
         <View className="flex-row flex-wrap">
           {(policy.keywords ?? []).map((kw, i) => (
             <View
-              key={i}
+              key={`keyword-${i}`}
               className="bg-gray-100 border border-gray-300 px-2 py-1 mr-2 mb-1 rounded-full"
             >
               <Text className="text-xs text-gray-600">{kw}</Text>
@@ -147,7 +148,7 @@ const isOngoing = !/^\d{4}\.\d{2}\.\d{2}$/.test(policy.applicationDeadline);
   };
 
   return (
-    <View className="flex w-screen h-screen bg-white">
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white', paddingBottom: insets.bottom }}>
       <ScrollView className="pb-6">
         {/* 상단 바 */}
         <View className="flex w-full h-[100px] justify-end pb-2 px-4 border-b border-b-gray-400">
@@ -190,7 +191,16 @@ const isOngoing = !/^\d{4}\.\d{2}\.\d{2}$/.test(policy.applicationDeadline);
         ) : (
           <View className="mt-4">
             {policies.length > 0 ? (
-              policies.map(renderPolicyCard)
+              policies.map((policy, index) => (
+                <Pressable
+                  key={policy.policyId}
+                  onPress={() =>
+                    navigation.navigate('InformScreen', { policy_id: policy.policyId })
+                  }
+                >
+                  {renderPolicyCard(policy, index)}
+                </Pressable>
+              ))
             ) : (
               <Text className="text-center text-gray-500 mt-4">
                 정책 정보가 없습니다.
@@ -199,6 +209,6 @@ const isOngoing = !/^\d{4}\.\d{2}\.\d{2}$/.test(policy.applicationDeadline);
           </View>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
