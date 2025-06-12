@@ -22,7 +22,7 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
       console.log('📌 navigation 확인:', navigation); // 이거 추가
 
       setUserInfo({ userId: res.data.user_id });
-      navigation.navigate('HomeNavigator'); // 여기서 에러 났을 가능성
+      navigation.navigate('HomeStackNavigator'); // 여기서 에러 났을 가능성
     } catch (err: any) {
       console.error('❌ 로그인 실패');
       console.error('상태코드:', err.response?.status);
@@ -88,7 +88,7 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
             <View className="flex w-full h-2/3 items-center justify-center my-2">
               <Pressable
                 className="flex w-5/6 h-[50px] bg-[#007AFF] rounded-xl items-center justify-center"
-                onPress={() => handleLogin()}
+                onPress={() => navigation.navigate('HomeStackNavigator')}
               >
                 <Text className="font-inter font-bold text-white text-2xl">
                   로그인
@@ -101,7 +101,7 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
         <View className="flex w-full h-auto items-center">
           <Pressable
             onPress={() => {
-              navigation.navigate('RegisterNavigator');
+              handleLogin();
             }}
           >
             <Text className="font-inter text-lg text-[#007AFF] my-1">
