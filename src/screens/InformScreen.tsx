@@ -35,7 +35,7 @@ export default function InformScreen({
 
   useEffect(() => {
     const fetchPolicy = async () => {
-      const policyId = route.params?.policy_id;
+      const policyId = route.params?.policyId ?? route.params?.policy_id;
       if (!policyId) {
         console.warn('🚨 policy_id가 전달되지 않았습니다.');
         setError(true);
@@ -72,6 +72,8 @@ export default function InformScreen({
   }, [route.params]);
 
   if (error) {
+    // Use the same policyId variable logic for navigation and data-fetching
+    const policyId = route.params?.policyId ?? route.params?.policy_id;
     return (
       <View className="flex-1 justify-center items-center bg-white px-4">
         <Text className="text-lg text-center">
@@ -85,7 +87,7 @@ export default function InformScreen({
             setPolicy(null);
             // re-fetch
             navigation.replace('InformationScreen', {
-              policy_id: route.params?.policy_id,
+              policyId: policyId,
             });
           }}
         >

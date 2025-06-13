@@ -88,7 +88,7 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
             <View className="flex w-full h-2/3 items-center justify-center my-2">
               <Pressable
                 className="flex w-5/6 h-[50px] bg-[#007AFF] rounded-xl items-center justify-center"
-                onPress={handleLogin}              >
+                onPress={handleLogin}>
                 <Text className="font-inter font-bold text-white text-2xl">
                   로그인
                 </Text>
@@ -99,9 +99,7 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
 
         <View className="flex w-full h-auto items-center">
           <Pressable
-            onPress={() => {
-              handleLogin();
-            }}
+            onPress={() => navigation.navigate('RegisterNavigator')}
           >
             <Text className="font-inter text-lg text-[#007AFF] my-1">
               회원가입

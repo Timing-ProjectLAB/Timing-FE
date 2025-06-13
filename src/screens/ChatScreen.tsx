@@ -1,3 +1,4 @@
+// src/screens/ChatScreen.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -12,93 +13,90 @@ import Menu from '../assets/images/Menu.svg';
 import Profile from '../assets/images/Profile.svg';
 import ChatBubble, { Message } from '../components/ChatBubble';
 import { NavigationTypes } from '../navigations/NavigationTypes';
-import { sendQuestion } from '../../api/chat';
+import { sendQuestion, PolicyItem, LlmResponse } from '../../api/chat';
 import { useUser } from '../contexts/UserContext';
 
 export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
   const { navigation } = props;
+  const { userInfo } = useUser();
 
   const initialMessages: Message[] = [
-    {
-      id: '1',
-      type: 'bot',
-      answer: '궁금한 내용이 있으면 물어보세요!\n어떤 질문이든지 대답할 준비가 됐어요 :)',
-    },
-    {
-      id: '2',
-      type: 'bot',
-      answer: '청년정책에 관한 챗봇입니다.\n어떤 내용을 도와드릴까요 ?',
-    },
+    { id: '1', type: 'bot', answer: '궁금한 내용이 있으면 물어보세요! 어떤 질문이든 대답 준비 완료 :)' },
+    { id: '2', type: 'bot', answer: '청년정책 관련 챗봇입니다. 무엇을 도와드릴까요?' },
   ];
 
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
-  const { userInfo } = useUser();
 
-const handleSend = async () => {
-  if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim()) return;
 
-  const userMsg: Message = {
-    id: Date.now().toString(),
-    type: 'user',
-    answer: input.trim(),
-  };
-
-  setMessages(prev => [...prev, userMsg]);
-  setInput('');
-
-  try {
-    const res = await sendQuestion({
-      user_id: userInfo.userId,
-      question: input.trim(),
-    });
-
-    console.log('📦 전체 응답 데이터 (string):', res.data);
-
-// ...
-const outerParsed = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
-const innerParsed = typeof outerParsed.answer === 'string' ? JSON.parse(outerParsed.answer) : outerParsed.answer;
-
-const rawAnswer = innerParsed.answer || '';
-
-// ✅ 실제 줄바꿈 문자 기준으로 나눔
-const splitLines = rawAnswer
-  .split('\n') // 핵심: 문자열 안의 줄바꿈
-  .map(line => line.trim())
-  .filter(Boolean);
-
-console.log('✅ 실제 분리된 라인:', splitLines);
-
-const parsedMsgs: Message[] = splitLines.map((line, idx) => {
-  const [titleRaw, descRaw] = line.split('**:').map(s => s.trim());
-
-  const title = titleRaw?.replace(/^-?\s*\*\*/, '').replace(/\*\*$/, '') ?? '';
-  const desc = descRaw?.replace(/\*\*/g, '') ?? '';
-  const text = `${title}\n${desc}\n더보기 >`;
-
-  return {
-    id: `${Date.now()}-${idx}`,
-    type: 'bot',
-    answer: text,
-    policy_id: outerParsed.policy_id?.[idx] ?? null,
-  };
-});
-
-setMessages(prev => [...prev, ...parsedMsgs]);
-// ...
-
-
-  } catch (error: any) {
-    console.error('❌ [서버 응답 에러]:', error.response?.data || error.message);
-    const errorMsg: Message = {
+    // 1) 유저 메시지 추가
+    const userMsg: Message = {
       id: Date.now().toString(),
-      type: 'bot',
-      answer: '서버 오류로 답변을 불러오지 못했어요.',
+      type: 'user',
+      answer: input.trim(),
     };
-    setMessages(prev => [...prev, errorMsg]);
-  }
-};
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
 
+    try {
+      // 2) API 호출
+      const res = await sendQuestion({
+        user_id: userInfo.userId,  // snake_case 로 바꿔서 서버가 기대하는 필드명과 맞춥니다
+        message: input.trim(),
+      });
+      const data = res.data;
+
+      // 3) 챗봇 요약 메시지
+      const botSummary: Message = {
+        id: `bot-${Date.now()}`,
+        type: 'bot',
+        answer: data.message,
+      };
+      setMessages(prev => [...prev, botSummary]);
+
+      // 4) 추천 정책이 있을 때
+      if (data.policies && data.policies.length > 0) {
+        const policyMsgs: Message[] = data.policies.map((p: PolicyItem, idx) => ({
+          id: `policy-${Date.now()}-${idx}`,
+          type: 'bot',
+          // title과 summary를 줄바꿈으로 표시
+          answer: `🔹 ${p.title}\n${p.summary}\n신청: ${p.apply_url || 'URL 없음'}\n이유: ${p.reason}`,
+          policy_id: p.policy_id,
+        }));
+        setMessages(prev => [...prev, ...policyMsgs]);
+      }
+      // 5) 부족한 정보가 있을 때
+      else if (data.missing_info && data.missing_info.length > 0) {
+        const askMore: Message = {
+          id: `miss-${Date.now()}`,
+          type: 'bot',
+          answer: `추가 정보가 필요해요: ${data.missing_info.join(', ')} 알려주세요.`,
+        };
+        setMessages(prev => [...prev, askMore]);
+      }
+      // 6) fallback 정책이 있을 때
+      else if (data.fallback_policies && data.fallback_policies.length > 0) {
+        const fallbackMsgs: Message[] = data.fallback_policies.map((p, idx) => ({
+          id: `fallback-${Date.now()}-${idx}`,
+          type: 'bot',
+          answer: `⚠️ 대체 추천: ${p.title}\n${p.summary}\n신청: ${p.apply_url || 'URL 없음'}`,
+          policy_id: p.policy_id,
+        }));
+        setMessages(prev => [...prev, ...fallbackMsgs]);
+      }
+
+    } catch (err: any) {
+      console.error('❌ [서버 응답 에러]:', err.response?.data || err.message);
+      const errorMsg: Message = {
+        id: `err-${Date.now()}`,
+        type: 'bot',
+        answer: '서버 오류로 답변을 받아올 수 없었어요. 다시 시도해주세요.',
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -145,12 +143,6 @@ setMessages(prev => [...prev, ...parsedMsgs]);
           onSubmitEditing={handleSend}
           returnKeyType="send"
         />
-        <TouchableOpacity
-          className="absolute bottom-20 right-4 bg-white border border-gray-300 px-4 py-2 rounded-xl shadow"
-          onPress={() => navigation.navigate('InformScreen')}
-        >
-          <Text className="text-black font-semibold">샘플 정책 보기</Text>
-        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
