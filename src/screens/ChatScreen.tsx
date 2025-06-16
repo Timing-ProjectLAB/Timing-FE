@@ -32,7 +32,7 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
     if (!input.trim()) return;
 
     // 1) 유저 메시지 추가
-    const userMsg: Message = {
+    const userMsg: question = {
       id: Date.now().toString(),
       type: 'user',
       answer: input.trim(),
@@ -44,7 +44,7 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
       // 2) API 호출
       const res = await sendQuestion({
         user_id: userInfo.userId,  // snake_case 로 바꿔서 서버가 기대하는 필드명과 맞춥니다
-        message: input.trim(),
+        question: input.trim(),
       });
       const data = res.data;
 
@@ -62,7 +62,7 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
           id: `policy-${Date.now()}-${idx}`,
           type: 'bot',
           // title과 summary를 줄바꿈으로 표시
-          answer: `🔹 ${p.title}\n${p.summary}\n신청: ${p.apply_url || 'URL 없음'}\n이유: ${p.reason}`,
+          answer: `🔹 ${p.title}\n${p.summary}`,
           policy_id: p.policy_id,
         }));
         setMessages(prev => [...prev, ...policyMsgs]);

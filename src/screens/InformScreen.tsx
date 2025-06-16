@@ -190,11 +190,6 @@ export default function InformScreen({
 
         <View className="h-[60px]" />
 
-        {/* 전체 JSON 보기 (디버깅용) */}
-        <Text className="font-bold text-lg mt-8 mb-2">📦 전체 응답 JSON</Text>
-        <Text className="text-xs text-gray-500 whitespace-pre-wrap">
-          {JSON.stringify(policy, null, 2)}
-        </Text>
       </ScrollView>
 
       {/* 하단 버튼 */}
