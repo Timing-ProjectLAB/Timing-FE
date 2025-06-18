@@ -3,6 +3,7 @@ import { View, Text, Pressable, TextInput } from 'react-native';
 import { NavigationTypes } from '../navigations/NavigationTypes';
 import { login } from '../../api/auth'; // 상단에 추가
 import { useUser } from '../contexts/UserContext';
+import { useLoading } from '../contexts/LoadingContext';
 
 export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
   const [saveId, setSaveId] = useState(false);
@@ -10,10 +11,12 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
   const [user_id, setUser_id] = useState('');
   const [password, setPassword] = useState('');
   const { setUserInfo } = useUser();
+  const { setLoading } = useLoading();
   const { navigation } = props; // 이 줄을 추가해야 돼
+
   const handleLogin = async () => {
     if (user_id.trim() === '' || password.trim() === '') return;
-
+    setLoading(true); // 로딩 시작
     try {
       console.log('📤 로그인 요청', { user_id, password });
       const res = await login(user_id, password);
@@ -28,6 +31,8 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
       console.error('상태코드:', err.response?.status);
       console.error('응답 데이터:', err.response?.data);
       console.error('전체 에러:', err.message);
+    } finally {
+      setLoading(false); // 로딩 종료
     }
   };
   return (
