@@ -35,7 +35,7 @@ export default function InformScreen({
 
   useEffect(() => {
     const fetchPolicy = async () => {
-      const policyId = route.params?.policy_id;
+      const policyId = route.params?.policyId ?? route.params?.policy_id;
       if (!policyId) {
         console.warn('🚨 policy_id가 전달되지 않았습니다.');
         setError(true);
@@ -72,6 +72,8 @@ export default function InformScreen({
   }, [route.params]);
 
   if (error) {
+    // Use the same policyId variable logic for navigation and data-fetching
+    const policyId = route.params?.policyId ?? route.params?.policy_id;
     return (
       <View className="flex-1 justify-center items-center bg-white px-4">
         <Text className="text-lg text-center">
@@ -85,7 +87,7 @@ export default function InformScreen({
             setPolicy(null);
             // re-fetch
             navigation.replace('InformationScreen', {
-              policy_id: route.params?.policy_id,
+              policyId: policyId,
             });
           }}
         >
@@ -188,11 +190,6 @@ export default function InformScreen({
 
         <View className="h-[60px]" />
 
-        {/* 전체 JSON 보기 (디버깅용) */}
-        <Text className="font-bold text-lg mt-8 mb-2">📦 전체 응답 JSON</Text>
-        <Text className="text-xs text-gray-500 whitespace-pre-wrap">
-          {JSON.stringify(policy, null, 2)}
-        </Text>
       </ScrollView>
 
       {/* 하단 버튼 */}

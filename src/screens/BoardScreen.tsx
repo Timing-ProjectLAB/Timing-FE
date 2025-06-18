@@ -148,8 +148,11 @@ const isOngoing = !/^\d{4}\.\d{2}\.\d{2}$/.test(policy.applicationDeadline);
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: 'white', paddingBottom: insets.bottom }}>
-      <ScrollView className="pb-6">
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: 'white', paddingBottom: insets.bottom }}
+      edges={['bottom']}
+    >
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
         {/* 상단 바 */}
         <View className="flex w-full h-[100px] justify-end pb-2 px-4 border-b border-b-gray-400">
           <Text className="font-pre text-2xl font-medium">

@@ -1,3 +1,4 @@
+// src/components/ChatBubble.tsx
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { NavigationTypes } from '../navigations/NavigationTypes';
@@ -15,17 +16,18 @@ interface ChatBubbleProps {
 }
 
 const renderFormattedText = (text: string) => {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g); // **굵은 텍스트** 구간 나누기
+  // **강조** 텍스트와 일반 텍스트 분리
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
 
   return parts.map((part, index) => {
     if (part.startsWith('**') && part.endsWith('**')) {
-      const boldText = part.replace(/\*\*/g, '');
+      const boldText = part.slice(2, -2);
       return (
         <Text
           key={index}
           style={{
             fontWeight: 'bold',
-            fontSize: 18, // 기본보다 3~4pt 증가
+            fontSize: 18, // 기본보다 4pt 상승
             color: '#000',
           }}
         >
@@ -48,18 +50,23 @@ export default function ChatBubble({ message, navigation }: ChatBubbleProps) {
   return (
     <Pressable
       className={`mb-2 px-4 ${isBot ? 'items-start' : 'items-end'}`}
-      onPress={() => {
-        if (message.policy_id) {
-          navigation.navigate('InformScreen', { policy_id: message.policy_id });
-        }
-      }}
+   onPress={() => {
+       console.log('▶︎ 선택된 policy_id:', message.policy_id);
+       console.log(message);
+      if (message.policy_id) {
+        navigation.navigate('InformScreen', {
+         // camelCase 로 통일
+          policyId: message.policy_id
+        });
+      }
+    }}
     >
       <View
         className={`max-w-[80%] rounded-xl px-4 py-3 shadow-sm ${
           isBot ? 'bg-white' : 'bg-[#D0EFFF]'
         }`}
       >
-        <Text>{renderFormattedText(message.answer)}</Text>
+        {renderFormattedText(message.answer)}
       </View>
     </Pressable>
   );
