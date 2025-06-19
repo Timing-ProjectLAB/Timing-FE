@@ -1,3 +1,4 @@
+// src/screens/InformScreen.tsx
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -25,61 +26,77 @@ type Policy = {
   support_content: string[];
 };
 
-// 샘플 정책 ID 리스트 (하드코딩된 테스트용)
-const TEST_POLICY_IDS = [
-  '20250521005400110863',
-  '20250522005400210870',
-  '20250520005400210861',
-  '20250517005400210845',
-  '20250529005400210880',
-];
-
 export default function InformScreen({
   navigation,
   route,
 }: NavigationTypes.InformationScreenProps) {
   const [policy, setPolicy] = useState<Policy | null>(null);
+  const [error, setError] = useState<boolean>(false);
 
-useEffect(() => {
-  const fetchPolicy = async () => {
-    let policyId = route.params?.policy_id;
+  useEffect(() => {
+    const fetchPolicy = async () => {
+      const policyId = route.params?.policyId ?? route.params?.policy_id;
+      if (!policyId) {
+        console.warn('🚨 policy_id가 전달되지 않았습니다.');
+        setError(true);
+        return;
+      }
 
-    if (!policyId) {
-      console.warn('🧪 랜덤 테스트용 정책 ID 선택');
-      const randomIndex = Math.floor(Math.random() * TEST_POLICY_IDS.length);
-      policyId = TEST_POLICY_IDS[randomIndex];
-    }
+      try {
+        const res = await getPolicyDetail(policyId);
+        const data = res.data;
 
-    try {
-      const res = await getPolicyDetail(policyId);
-      const data = res.data;
+        // camelCase → snake_case 매핑
+        const parsed: Policy = {
+          policy_id: data.policyId,
+          plcyKywdNm: data.plcyKywdNm,
+          policy_name: data.policyName,
+          policy_description: data.policyDescription,
+          policy_summary: {
+            operating_agency: data.policySummary.operatingAgency,
+            application_period: data.policySummary.applicationPeriod,
+            application_url: data.policySummary.applicationUrl,
+          },
+          target_audience: data.targetAudience,
+          support_content: data.supportContent,
+        };
 
-      console.log('✅ 정책 상세 응답:', data);
+        setPolicy(parsed);
+      } catch (e) {
+        console.error('❌ 정책 상세 조회 실패:', e);
+        setError(true);
+      }
+    };
 
-      // 🔁 camelCase → snake_case 수동 매핑
-      const parsed: Policy = {
-        policy_id: data.policyId,
-        plcyKywdNm: data.plcyKywdNm,
-        policy_name: data.policyName,
-        policy_description: data.policyDescription,
-        policy_summary: {
-          operating_agency: data.policySummary.operatingAgency,
-          application_period: data.policySummary.applicationPeriod,
-          application_url: data.policySummary.applicationUrl,
-        },
-        target_audience: data.targetAudience,
-        support_content: data.supportContent,
-      };
+    fetchPolicy();
+  }, [route.params]);
 
-      setPolicy(parsed);
-    } catch (error: any) {
-      console.error('❌ 정책 상세 조회 실패:', error);
-      setPolicy(samplePolicy);
-    }
-  };
+  if (error) {
+    // Use the same policyId variable logic for navigation and data-fetching
+    const policyId = route.params?.policyId ?? route.params?.policy_id;
+    return (
+      <View className="flex-1 justify-center items-center bg-white px-4">
+        <Text className="text-lg text-center">
+          정책 정보를 불러오는 중 오류가 발생했습니다.{'\n'}
+          잠시 후 다시 시도해주세요.
+        </Text>
+        <TouchableOpacity
+          className="mt-4 px-4 py-2 bg-[#007AFF] rounded"
+          onPress={() => {
+            setError(false);
+            setPolicy(null);
+            // re-fetch
+            navigation.replace('InformationScreen', {
+              policyId: policyId,
+            });
+          }}
+        >
+          <Text className="text-white text-base font-medium">다시 시도</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
-  fetchPolicy();
-}, []);
   if (!policy) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
@@ -111,11 +128,14 @@ useEffect(() => {
 
         {/* 키워드 */}
         <View className="flex-row flex-wrap gap-2 mb-3">
-          {policy.plcyKywdNm.split(',').map((tag: string, index: number) => (
-            <View key={tag} className="px-3 py-1.5 rounded-full bg-[#E8EFF7]">
+          {policy.plcyKywdNm.split(',').map((tag, idx) => (
+            <View
+              key={tag}
+              className="px-3 py-1.5 rounded-full bg-[#E8EFF7]"
+            >
               <Text
                 className={`font-pre text-base font-medium ${
-                  index % 2 === 0 ? 'text-[#0060C9]' : 'text-[#0DE2B8]'
+                  idx % 2 === 0 ? 'text-[#0060C9]' : 'text-[#0DE2B8]'
                 }`}
               >
                 #{tag}
@@ -142,7 +162,9 @@ useEffect(() => {
             {policy.policy_summary.application_period}
           </Text>
           <TouchableOpacity
-            onPress={() => Linking.openURL(policy.policy_summary.application_url)}
+            onPress={() =>
+              Linking.openURL(policy.policy_summary.application_url)
+            }
           >
             <Text className="text-base text-gray-500 font-medium mt-1">
               링크 바로가기 &gt;
@@ -152,34 +174,31 @@ useEffect(() => {
 
         {/* 지원 대상 */}
         <Text className="font-bold text-xl mb-2">지원대상</Text>
-        {policy.target_audience.map((item: string, index: number) => (
-          <Text key={index} className="text-base text-gray-700 mb-1">
+        {policy.target_audience.map((item, idx) => (
+          <Text key={idx} className="text-base text-gray-700 mb-1">
             • {item}
           </Text>
         ))}
 
         {/* 지원 내용 */}
         <Text className="font-bold text-xl mt-6 mb-2">지원내용</Text>
-        {policy.support_content.map((item: string, index: number) => (
-          <Text key={index} className="text-base text-gray-700 mb-1">
+        {policy.support_content.map((item, idx) => (
+          <Text key={idx} className="text-base text-gray-700 mb-1">
             • {item}
           </Text>
         ))}
 
-        {/* 전체 JSON 보기 (디버깅용) */}
-        <Text className="font-bold text-lg mt-8 mb-2">📦 전체 응답 JSON</Text>
-        <Text className="text-xs text-gray-500 whitespace-pre-wrap">
-          {JSON.stringify(policy, null, 2)}
-        </Text>
-
         <View className="h-[60px]" />
+
       </ScrollView>
 
       {/* 하단 버튼 */}
       <View className="absolute bottom-0 left-0 right-0 pb-8 pt-3 px-5 border-t border-gray-200 bg-white">
         <TouchableOpacity
           className="w-full h-[50px] rounded-xl bg-[#007AFF] justify-center items-center"
-          onPress={() => Linking.openURL(policy.policy_summary.application_url)}
+          onPress={() =>
+            Linking.openURL(policy.policy_summary.application_url)
+          }
         >
           <Text className="text-white text-lg font-bold">신청하기</Text>
         </TouchableOpacity>

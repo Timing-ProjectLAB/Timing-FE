@@ -10,6 +10,7 @@ export declare namespace NavigationTypes {
     ChatNavigator: undefined;
     BoardNavigator: undefined;
     HomeNavigator: undefined;
+    HomeStackNavigator: undefined;
   };
 
   export type StartScreenProps = StackScreenProps<
@@ -83,14 +84,7 @@ export declare namespace NavigationTypes {
   export type BoardStackList = {
     BoardScreen: undefined;
     InformScreen: {
-      policy: {
-        title: string;
-        content?: string;
-        target: string;
-        amount: string;
-        date: string;
-        link?: string;
-      };
+      policy_id: string;
     };
   };
 
@@ -99,10 +93,15 @@ export declare namespace NavigationTypes {
     'BoardScreen'
   >;
 
-  export type HomeStackList = {
+  export type HomeTabList = {
     HomeScreen: undefined;
     ChatNavigator: undefined;
     BoardNavigator: undefined;
+    Favorites: undefined;
+    MyPage: undefined;
+    InformScreen: {
+      policy_id: string;
+    };
   };
 
   export type HomeTabParamList = {
@@ -111,5 +110,10 @@ export declare namespace NavigationTypes {
     BoardNavigator: undefined;
   };
 
-  export type HomeScreenProps = StackScreenProps<HomeStackList, 'HomeScreen'>;
+  export type HomeStackParamList = {
+    Tabs: undefined;
+    InformScreen: { policy_id: string };
+  };
+
+  export type HomeScreenProps = StackScreenProps<HomeTabList, 'HomeScreen'>;
 }

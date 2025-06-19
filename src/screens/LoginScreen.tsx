@@ -3,6 +3,7 @@ import { View, Text, Pressable, TextInput } from 'react-native';
 import { NavigationTypes } from '../navigations/NavigationTypes';
 import { login } from '../../api/auth'; // 상단에 추가
 import { useUser } from '../contexts/UserContext';
+import { useLoading } from '../contexts/LoadingContext';
 
 export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
   const [saveId, setSaveId] = useState(false);
@@ -10,10 +11,12 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
   const [user_id, setUser_id] = useState('');
   const [password, setPassword] = useState('');
   const { setUserInfo } = useUser();
+  const { setLoading } = useLoading();
   const { navigation } = props; // 이 줄을 추가해야 돼
+
   const handleLogin = async () => {
     if (user_id.trim() === '' || password.trim() === '') return;
-
+    setLoading(true); // 로딩 시작
     try {
       console.log('📤 로그인 요청', { user_id, password });
       const res = await login(user_id, password);
@@ -22,12 +25,14 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
       console.log('📌 navigation 확인:', navigation); // 이거 추가
 
       setUserInfo({ userId: res.data.user_id });
-      navigation.navigate('HomeNavigator'); // 여기서 에러 났을 가능성
+      navigation.navigate('HomeStackNavigator'); // 여기서 에러 났을 가능성
     } catch (err: any) {
       console.error('❌ 로그인 실패');
       console.error('상태코드:', err.response?.status);
       console.error('응답 데이터:', err.response?.data);
       console.error('전체 에러:', err.message);
+    } finally {
+      setLoading(false); // 로딩 종료
     }
   };
   return (
@@ -88,8 +93,7 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
             <View className="flex w-full h-2/3 items-center justify-center my-2">
               <Pressable
                 className="flex w-5/6 h-[50px] bg-[#007AFF] rounded-xl items-center justify-center"
-                onPress={() => handleLogin()}
-              >
+                onPress={handleLogin}>
                 <Text className="font-inter font-bold text-white text-2xl">
                   로그인
                 </Text>
@@ -100,9 +104,7 @@ export default function LoginScreen(props: NavigationTypes.LoginScreenProps) {
 
         <View className="flex w-full h-auto items-center">
           <Pressable
-            onPress={() => {
-              navigation.navigate('RegisterNavigator');
-            }}
+            onPress={() => navigation.navigate('RegisterNavigator')}
           >
             <Text className="font-inter text-lg text-[#007AFF] my-1">
               회원가입
