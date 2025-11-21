@@ -15,10 +15,13 @@ interface ChatBubbleProps {
   navigation: NavigationTypes.ChatScreenProps['navigation'];
 }
 
-const renderFormattedText = (text: string) => {
+const renderFormattedText = (text: string | null | undefined) => {
+  if (!text) {
+    return null;
+  }
   // **강조** 텍스트와 일반 텍스트 분리
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
-
+  console.log(`parts = ${parts}`);
   return parts.map((part, index) => {
     if (part.startsWith('**') && part.endsWith('**')) {
       const boldText = part.slice(2, -2);
@@ -46,20 +49,20 @@ const renderFormattedText = (text: string) => {
 
 export default function ChatBubble({ message, navigation }: ChatBubbleProps) {
   const isBot = message.type === 'bot';
-
+  console.log(`message = ${message.answer}`);
   return (
     <Pressable
       className={`mb-2 px-4 ${isBot ? 'items-start' : 'items-end'}`}
-   onPress={() => {
-       console.log('▶︎ 선택된 policy_id:', message.policy_id);
-       console.log(message);
-      if (message.policy_id) {
-        navigation.navigate('InformScreen', {
-         // camelCase 로 통일
-          policyId: message.policy_id
-        });
-      }
-    }}
+      onPress={() => {
+        console.log('▶︎ 선택된 policy_id:', message.policy_id);
+        console.log(message);
+        if (message.policy_id) {
+          navigation.navigate('InformScreen', {
+            // camelCase 로 통일
+            policyId: message.policy_id,
+          });
+        }
+      }}
     >
       <View
         className={`max-w-[80%] rounded-xl px-4 py-3 shadow-sm ${
