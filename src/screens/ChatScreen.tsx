@@ -1,3 +1,4 @@
+// ChatScreen.tsx
 // src/screens/ChatScreen.tsx
 import React, { useState } from 'react';
 import {
@@ -37,11 +38,12 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
 
+  // 💡 NOTE: 타입 오류 수정: "question" → Message
   const handleSend = async () => {
     if (!input.trim()) return;
 
     // 1) 유저 메시지 추가
-    const userMsg: question = {
+    const userMsg: Message = {
       id: Date.now().toString(),
       type: 'user',
       answer: input.trim(),
@@ -53,12 +55,13 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
       // 2) API 호출
       const res = await sendQuestion({
         user_id: userInfo.userId,
-        question: input.trim(),
+        question: input.trim(), // ❗ 여기 수정됨: chat.ts의 payload 형식에 맞게
       });
 
-      const llmResponseString = res.data.answer;
-      const data = JSON.parse(llmResponseString); // 3) 챗봇 요약 메시지
+      // 3) 서버 응답(JSON.parse 제거)
+      const data: LlmResponse = res.data;
 
+      // 4) 챗봇 응답 메시지
       const botSummary: Message = {
         id: `bot-${Date.now()}`,
         type: 'bot',
@@ -66,21 +69,22 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
       };
       setMessages(prev => [...prev, botSummary]);
 
-      // 4) 추천 정책이 있을 때
+      // 5) 추천 정책 처리
       if (data.policies && data.policies.length > 0) {
         const policyMsgs: Message[] = data.policies.map(
           (p: PolicyItem, idx) => ({
             id: `policy-${Date.now()}-${idx}`,
             type: 'bot',
-            // title과 summary를 줄바꿈으로 표시
             answer: `🔹 ${p.title}\n${p.summary}`,
             policy_id: p.policy_id,
           }),
         );
         setMessages(prev => [...prev, ...policyMsgs]);
+        return;
       }
-      // 5) 부족한 정보가 있을 때
-      else if (data.missing_info && data.missing_info.length > 0) {
+
+      // 6) 추가 정보 요청
+      if (data.missing_info && data.missing_info.length > 0) {
         const askMore: Message = {
           id: `miss-${Date.now()}`,
           type: 'bot',
@@ -89,9 +93,11 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
           )} 알려주세요.`,
         };
         setMessages(prev => [...prev, askMore]);
+        return;
       }
-      // 6) fallback 정책이 있을 때
-      else if (data.fallback_policies && data.fallback_policies.length > 0) {
+
+      // 7) 대체 정책(fallback)
+      if (data.fallback_policies && data.fallback_policies.length > 0) {
         const fallbackMsgs: Message[] = data.fallback_policies.map(
           (p, idx) => ({
             id: `fallback-${Date.now()}-${idx}`,
@@ -103,6 +109,7 @@ export default function ChatScreen(props: NavigationTypes.ChatScreenProps) {
           }),
         );
         setMessages(prev => [...prev, ...fallbackMsgs]);
+        return;
       }
     } catch (err: any) {
       console.error('❌ [서버 응답 에러]:', err.response?.data || err.message);

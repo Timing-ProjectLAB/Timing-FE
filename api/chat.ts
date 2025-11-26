@@ -16,7 +16,7 @@ export interface LlmResponse {
 
 export interface SendQuestionPayload {
   user_id: string;
-  message: string;
+  question: string;
 }
 
 export const sendQuestion = (payload: SendQuestionPayload) => {
